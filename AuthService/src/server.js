@@ -1,12 +1,17 @@
 const express = require('express');
 const prisma = require("./prisma")
+const authRoutes = require("./routes/auth.routes")
 
 const app = express()
 const port = 5000
 
+app.use(express.json())
+
 app.listen(port,()=>{
     console.log(`server start successfully! ${port}`)
 })
+
+app.use("/auth", authRoutes);
 
 app.get("/db-check", async (req, res) => {
   try {
