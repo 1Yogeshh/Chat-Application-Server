@@ -34,4 +34,28 @@ const getAllUsers = async (req, res) =>{
     }
 }
 
-module.exports = {register, getAllUsers}
+const login = async(req, res)=>{
+    try {
+        const {email, password} = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password required",
+            });
+        }
+
+        const data = await authService.login(email, password)
+
+        res.status(201).json({
+      message: "User login successfully",
+      data,
+    });
+
+    } catch (error) {
+       res.status(400).json({
+      message: error.message,
+    });  
+    }
+}
+
+module.exports = {register, getAllUsers, login}

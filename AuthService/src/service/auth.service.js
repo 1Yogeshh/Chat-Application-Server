@@ -33,4 +33,26 @@ const getAllUsers = async()=>{
     })
 }
 
-module.exports= {register, getAllUsers}
+const login = async(email, password)=>{
+    
+    const user = await prisma.authUser.findUnique({
+        where:{email}
+    })
+
+    if(!user){
+        throw new Error("Invalid Credentials")
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    if(!isMatch){
+        throw new Error("Invalid Credentials")
+    }
+
+    // ❌ password hata do
+  const { password: _, ...safeUser } = user;
+
+  return safeUser;
+}
+
+module.exports= {register, getAllUsers, login}
