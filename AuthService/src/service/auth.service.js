@@ -49,10 +49,9 @@ const login = async(email, password)=>{
         throw new Error("Invalid Credentials")
     }
 
-    // ❌ password hata do
-  const { password: _, ...safeUser } = user;
+    const { password: _, ...safeUser } = user;
 
-  return safeUser;
+    return safeUser;
 }
 
 module.exports= {register, getAllUsers, login}
