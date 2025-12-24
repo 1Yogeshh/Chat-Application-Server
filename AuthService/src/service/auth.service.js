@@ -1,5 +1,6 @@
 const prisma = require("../prisma")
 const bcrypt = require("bcrypt")
+const generateToken = require("../config/generateToken")
 
 const register = async(email, password)=>{
     const existUser = await prisma.authUser.findUnique({
@@ -48,10 +49,12 @@ const login = async(email, password)=>{
     if(!isMatch){
         throw new Error("Invalid Credentials")
     }
+    
+    const token = generateToken(user);
 
     const { password: _, ...safeUser } = user;
 
-    return safeUser;
+    return {safeUser, token};
 }
 
 module.exports= {register, getAllUsers, login}
