@@ -1,6 +1,7 @@
 const prisma = require("../prisma")
 const bcrypt = require("bcrypt")
-const generateToken = require("../config/generateToken")
+const {generateToken, generateRefreshToken} = require("../config/generateToken")
+const hashToken = require("../utils/hashToken")
 
 const register = async(email, password)=>{
     const existUser = await prisma.authUser.findUnique({
@@ -51,10 +52,21 @@ const login = async(email, password)=>{
     }
     
     const token = generateToken(user);
+    const refreshToken = generateRefreshToken(user)
+
+    const refreshTokenHash = hashToken(refreshToken)
+
+    await prisma.refreshToken.create({
+        data:{
+            userId: user.id,
+            tokenHash: refreshTokenHash,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        }
+    })
 
     const { password: _, ...safeUser } = user;
 
-    return {safeUser, token};
+    return {safeUser, token, refreshToken};
 }
 
 module.exports= {register, getAllUsers, login}

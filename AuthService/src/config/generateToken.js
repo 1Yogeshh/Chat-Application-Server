@@ -13,4 +13,16 @@ const generateToken =(user)=>{
     )
 }
 
-module.exports = generateToken;
+const generateRefreshToken = (user)=>{
+    return jwt.sign(
+        {
+            userId:user.id
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn:process.env.REFRESH_TOKEN_EXPIRES
+        }
+    )
+}
+
+module.exports = {generateToken, generateRefreshToken};

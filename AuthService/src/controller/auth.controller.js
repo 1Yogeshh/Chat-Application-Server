@@ -49,11 +49,19 @@ const login = async(req, res)=>{
             });
         }
 
-        const data = await authService.login(email, password)
+        const {safeUser, token, refreshToken} = await authService.login(email, password)
+
+        res.cookie("refreshToken", refreshToken,{
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
 
         res.status(201).json({
             message: "User login successfully",
-            data,
+            user: safeUser,
+            token,
         });
 
     } catch (error) {
