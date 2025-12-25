@@ -1,4 +1,5 @@
 const authService = require("../service/auth.service")
+const refreshTokenService = require("../service/refreshToken.service")
 
 //register controller
 const register = async(req, res)=>{
@@ -49,11 +50,11 @@ const login = async(req, res)=>{
             });
         }
 
-        const {safeUser, token, refreshToken} = await authService.login(email, password)
+        const {safeUser, accessToken, refreshToken} = await authService.login(email, password)
 
         res.cookie("refreshToken", refreshToken,{
             httpOnly: true,
-            secure: true,
+            secure: false,
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         })
@@ -61,7 +62,8 @@ const login = async(req, res)=>{
         res.status(201).json({
             message: "User login successfully",
             user: safeUser,
-            token,
+            accessToken,
+            refreshToken
         });
 
     } catch (error) {
@@ -71,4 +73,23 @@ const login = async(req, res)=>{
     }
 }
 
-module.exports = {register, getAllUsers, login}
+const refreshToken = async (req, res) =>{
+    try {
+        const token = req.cookies.refreshToken;
+        const {newAccessToken, newRefreshToken} = await refreshTokenService(token)
+
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.json({ accessToken: newAccessToken });
+
+    } catch (error) {
+        res.status(401).json({ message: error.message });
+    }
+}
+
+module.exports = {register, getAllUsers, login, refreshToken}

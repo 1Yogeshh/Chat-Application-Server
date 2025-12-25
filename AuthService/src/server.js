@@ -1,11 +1,13 @@
 const express = require('express');
 const prisma = require("./prisma")
 const authRoutes = require("./routes/auth.routes")
+const cookieParser = require("cookie-parser");
 
 const app = express()
 const port = 5000
 
 app.use(express.json())
+app.use(cookieParser()); 
 
 app.listen(port,()=>{
     console.log(`server start successfully! ${port}`)

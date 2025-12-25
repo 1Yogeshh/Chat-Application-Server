@@ -1,6 +1,6 @@
 const prisma = require("../prisma")
 const bcrypt = require("bcrypt")
-const {generateToken, generateRefreshToken} = require("../config/generateToken")
+const {generateAccessToken, generateRefreshToken} = require("../config/generateToken")
 const hashToken = require("../utils/hashToken")
 
 const register = async(email, password)=>{
@@ -51,7 +51,7 @@ const login = async(email, password)=>{
         throw new Error("Invalid Credentials")
     }
     
-    const token = generateToken(user);
+    const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user)
 
     const refreshTokenHash = hashToken(refreshToken)
@@ -66,7 +66,7 @@ const login = async(email, password)=>{
 
     const { password: _, ...safeUser } = user;
 
-    return {safeUser, token, refreshToken};
+    return {safeUser, accessToken, refreshToken};
 }
 
 module.exports= {register, getAllUsers, login}
