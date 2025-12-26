@@ -1,5 +1,6 @@
 const authService = require("../service/auth.service")
 const refreshTokenService = require("../service/refreshToken.service")
+const logoutService = require("../service/logout.service")
 
 //register controller
 const register = async(req, res)=>{
@@ -92,4 +93,10 @@ const refreshToken = async (req, res) =>{
     }
 }
 
-module.exports = {register, getAllUsers, login, refreshToken}
+const logout = async(req, res)=>{
+    await logoutService(req.cookies.refreshToken)
+    res.clearCookie("refreshToken");
+    res.json({ message: "Logged out" });
+}
+
+module.exports = {register, getAllUsers, login, refreshToken, logout}

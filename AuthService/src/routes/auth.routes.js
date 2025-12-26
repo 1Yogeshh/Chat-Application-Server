@@ -19,4 +19,6 @@ router.get("/me", protect,(req, res)=>{
 
 router.post("/refresh-token", authController.refreshToken)
 
+router.post("/logout", authController.logout)
+
 module.exports = router

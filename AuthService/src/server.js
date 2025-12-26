@@ -2,6 +2,7 @@ const express = require('express');
 const prisma = require("./prisma")
 const authRoutes = require("./routes/auth.routes")
 const cookieParser = require("cookie-parser");
+require("./config/redis")
 
 const app = express()
 const port = 5000

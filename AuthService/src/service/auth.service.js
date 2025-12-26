@@ -2,6 +2,7 @@ const prisma = require("../prisma")
 const bcrypt = require("bcrypt")
 const {generateAccessToken, generateRefreshToken} = require("../config/generateToken")
 const hashToken = require("../utils/hashToken")
+const redis = require("../config/redis")
 
 const register = async(email, password)=>{
     const existUser = await prisma.authUser.findUnique({
@@ -63,6 +64,13 @@ const login = async(email, password)=>{
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         }
     })
+
+    await redis.set(
+        `refresh_token:${refreshTokenHash}`,
+        user.id,
+        "EX",
+        7 * 24 * 60 * 60 // seconds
+    )
 
     const { password: _, ...safeUser } = user;
 
