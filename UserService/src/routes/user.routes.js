@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 
 const protect = require("../middleware/userMiddleware")
-const createUser = require("../controllers/user.controller")
+const {createUser, getMyProfile} = require("../controllers/user.controller")
 
 
 router.get("/me", protect,(req, res)=>{
@@ -13,6 +13,7 @@ router.get("/me", protect,(req, res)=>{
 } )
 
 router.post("/create", protect, createUser  )
+router.get("/myprofile", protect, getMyProfile)
 
 
 module.exports = router

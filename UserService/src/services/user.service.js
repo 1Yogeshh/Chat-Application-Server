@@ -2,7 +2,7 @@ const prisma = require("../prisma")
 
 const createUserService = async({authUserId, email, name})=>{
     const existUser = await prisma.user.findUnique({
-        where: { authUserId, email }
+        where: { authUserId }
     })
 
     if(existUser){
@@ -24,9 +24,15 @@ const createUserService = async({authUserId, email, name})=>{
     })
 
     return {
-        alreadyExists: false,
+        alreadyExits: false,
         user
     };
 }
 
-module.exports = createUserService
+const getMyProfileService = async(authUserId)=>{
+    return prisma.user.findUnique({
+        where:{authUserId}
+    })
+}
+
+module.exports = {createUserService, getMyProfileService}
