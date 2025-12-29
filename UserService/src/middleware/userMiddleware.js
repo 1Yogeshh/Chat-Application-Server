@@ -11,7 +11,10 @@ const protect = (req, res, next)=>{
 
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
-        req.user = decoded
+        req.user = {
+            authUserId: decoded.userId,
+            email: decoded.email
+        };
         next()
     } catch (error) {
         res.status(401).json({message:"token invalid"})
