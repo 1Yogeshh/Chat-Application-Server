@@ -29,4 +29,4 @@ const createUserService = async({authUserId, email, name})=>{
     };
 }
 
-module.exports = {createUserService}
+module.exports = createUserService
