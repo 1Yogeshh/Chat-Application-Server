@@ -1,4 +1,9 @@
-const {createUserService, getMyProfileService, updateUserService} = require("../services/user.service")
+const {createUserService, 
+  getMyProfileService, 
+  updateUserService, 
+  blockUserService,
+  blockListService
+} = require("../services/user.service")
 
 const createUser = async(req, res)=>{
     const {authUserId, email} = req.user;
@@ -61,4 +66,21 @@ const updateUser = async(req, res)=>{
   })
 }
 
-module.exports = {createUser, getMyProfile, updateUser}
+const blockUser = async(req, res)=>{
+  try {
+    const {authUserId} = req.user;
+    await blockUserService(authUserId, req.params.blockedAuthUserId);
+
+    res.status(200).json({message:"User blocked successfully"})
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
+const blockList = async(req, res)=>{
+  const {authUserId} = req.user;
+  const list = await blockListService(authUserId)
+  res.status(200).json(list)
+}
+
+module.exports = {createUser, getMyProfile, updateUser, blockUser, blockList}

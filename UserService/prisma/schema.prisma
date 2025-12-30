@@ -22,6 +22,16 @@ model User {
   @@index([authUserId])
 }
 
+model BlockedUser {
+  id                String   @id @default(uuid())
+  blockerAuthUserId String
+  blockedAuthUserId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([blockerAuthUserId, blockedAuthUserId])
+}
+
 enum Role {
   USER
   ADMIN

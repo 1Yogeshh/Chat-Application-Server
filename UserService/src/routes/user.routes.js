@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 
 const protect = require("../middleware/userMiddleware")
-const {createUser, getMyProfile, updateUser} = require("../controllers/user.controller")
+const {createUser, getMyProfile, updateUser, blockUser, blockList} = require("../controllers/user.controller")
 
 
 router.get("/me", protect,(req, res)=>{
@@ -15,6 +15,10 @@ router.get("/me", protect,(req, res)=>{
 router.post("/create", protect, createUser  )
 router.get("/myprofile", protect, getMyProfile)
 router.put("/update", protect, updateUser)
+
+router.post("/block/:blockedAuthUserId", protect, blockUser)
+
+router.get("/blocked/list", protect, blockList)
 
 
 module.exports = router

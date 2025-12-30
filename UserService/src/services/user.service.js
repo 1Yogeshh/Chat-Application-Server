@@ -29,12 +29,14 @@ const createUserService = async({ authUserId, email, name }) => {
     };
 }
 
+//get my profile
 const getMyProfileService = async(authUserId) => {
     return prisma.user.findUnique({
         where: { authUserId }
     })
 }
 
+//update user
 const updateUserService = async(authUserId, name)=>{
     return prisma.user.update({
         where:{authUserId},
@@ -42,4 +44,91 @@ const updateUserService = async(authUserId, name)=>{
     })
 }
 
-module.exports = { createUserService, getMyProfileService, updateUserService }
+//helper check user exists
+const userExists = async(authUserId)=>{
+    const user = await prisma.user.findUnique({
+        where:{
+            authUserId
+        },
+        select:{
+            authUserId:true
+        }
+    })
+
+    return !!user
+}
+
+//block user
+const blockUserService = async(blockerAuthUserId, blockedAuthUserId)=>{
+    if(blockerAuthUserId=== blockedAuthUserId){
+        throw new Error("You cannot block yourself")
+    }
+
+    const receiverExists = await userExists(blockedAuthUserId)
+    if(!receiverExists){
+        throw new Error("User to block does not exist")
+    }
+
+    const alreadyBlock = await prisma.blockedUser.findUnique({
+        where:{
+            blockerAuthUserId_blockedAuthUserId:{
+                blockerAuthUserId,
+                blockedAuthUserId
+            }
+        }
+    })
+
+    if(alreadyBlock){
+        throw new Error("User Already Blocked")
+    }
+
+    await prisma.blockedUser.create({
+        data:{
+            blockerAuthUserId,
+            blockedAuthUserId
+        }
+    })
+}
+
+const blockListService = async (blockerAuthUserId) => {
+  // 1️⃣ blocked users ke authUserIds nikalo
+  const blockedRows = await prisma.blockedUser.findMany({
+    where: { blockerAuthUserId },
+    select: {
+      blockedAuthUserId: true
+    }
+  });
+
+  const blockedAuthUserIds = blockedRows.map(
+    row => row.blockedAuthUserId
+  );
+
+  if (blockedAuthUserIds.length === 0) {
+    return [];
+  }
+
+  // 2️⃣ User table se unka data lao
+  const blockedUsers = await prisma.user.findMany({
+    where: {
+      authUserId: {
+        in: blockedAuthUserIds
+      }
+    },
+    select: {
+      authUserId: true,
+      name: true,
+      email: true,
+      isActive: true
+    }
+  });
+
+  return blockedUsers;
+};
+
+module.exports = { 
+    createUserService, 
+    getMyProfileService, 
+    updateUserService, 
+    blockUserService, 
+    blockListService 
+}
