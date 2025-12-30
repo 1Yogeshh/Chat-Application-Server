@@ -2,7 +2,9 @@ const {createUserService,
   getMyProfileService, 
   updateUserService, 
   blockUserService,
-  blockListService
+  unblockService,
+  blockListService,
+  checkBlockService
 } = require("../services/user.service")
 
 const createUser = async(req, res)=>{
@@ -77,10 +79,35 @@ const blockUser = async(req, res)=>{
   }
 }
 
+const unblockUser = async(req, res)=>{
+  try {
+    const {authUserId} = req.user;
+    await unblockService(authUserId, req.params.blockedAuthUserId)
+
+    res.status(200).json({ message: "User unblocked successfully" });
+  } catch (error) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
 const blockList = async(req, res)=>{
   const {authUserId} = req.user;
   const list = await blockListService(authUserId)
   res.status(200).json(list)
 }
 
-module.exports = {createUser, getMyProfile, updateUser, blockUser, blockList}
+const checkBlock = async(req, res)=>{
+  const { receiverAuthUserId } = req.query;
+
+  if (!receiverAuthUserId) {
+    return res
+      .status(400)
+      .json({ message: "receiverAuthUserId required" });
+  }
+
+  const blocked = await checkBlockService(req.user.authUserId, receiverAuthUserId)
+
+  res.status(200).json(blocked)
+}
+
+module.exports = {createUser, getMyProfile, updateUser, blockUser, blockList, unblockUser, checkBlock}

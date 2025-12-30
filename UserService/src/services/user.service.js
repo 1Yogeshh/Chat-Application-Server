@@ -90,6 +90,24 @@ const blockUserService = async(blockerAuthUserId, blockedAuthUserId)=>{
     })
 }
 
+//unblock
+const unblockService = async(blockerAuthUserId, blockedAuthUserId)=>{
+    const receiverExists = await userExists(blockedAuthUserId);
+    if (!receiverExists) {
+       throw new Error("User does not exist");
+    }
+
+    await prisma.blockedUser.delete({
+        where:{
+            blockerAuthUserId_blockedAuthUserId: {
+        blockerAuthUserId,
+        blockedAuthUserId
+      }
+        }
+    })
+}
+
+//block list
 const blockListService = async (blockerAuthUserId) => {
   // 1️⃣ blocked users ke authUserIds nikalo
   const blockedRows = await prisma.blockedUser.findMany({
@@ -125,10 +143,37 @@ const blockListService = async (blockerAuthUserId) => {
   return blockedUsers;
 };
 
+//check block or not
+const checkBlockService = async(senderAuthUserId, receiverAuthUserId)=>{
+    const receiverExists = await userExists(receiverAuthUserId)
+    if (!receiverExists) {
+        return true; // ❗ safest default → block
+    }
+
+    const blocked = await prisma.blockedUser.findFirst({
+        where: {
+      OR: [
+        {
+          blockerAuthUserId: senderAuthUserId,
+          blockedAuthUserId: receiverAuthUserId
+        },
+        {
+          blockerAuthUserId: receiverAuthUserId,
+          blockedAuthUserId: senderAuthUserId
+        }
+      ]
+    }
+    })
+
+    return !!blocked
+}
+
 module.exports = { 
     createUserService, 
     getMyProfileService, 
     updateUserService, 
-    blockUserService, 
-    blockListService 
+    blockUserService,
+    unblockService, 
+    blockListService ,
+    checkBlockService
 }
