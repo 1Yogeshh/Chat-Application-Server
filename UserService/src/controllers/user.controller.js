@@ -1,4 +1,4 @@
-const {createUserService, getMyProfileService} = require("../services/user.service")
+const {createUserService, getMyProfileService, updateUserService} = require("../services/user.service")
 
 const createUser = async(req, res)=>{
     const {authUserId, email} = req.user;
@@ -43,4 +43,22 @@ const getMyProfile = async(req, res)=>{
     res.status(200).json(user);
 }
 
-module.exports = {createUser, getMyProfile}
+const updateUser = async(req, res)=>{
+  const {authUserId} = req.user;
+  const {name} = req.body;
+
+  if(!name || name.trim()===""){
+        return res.status(400).json({
+            message:"Name is required"
+        })
+  }
+
+  const user = await updateUserService(authUserId, name);
+
+  res.status(200).json({
+    message:"profile updated successfully",
+    user
+  })
+}
+
+module.exports = {createUser, getMyProfile, updateUser}
