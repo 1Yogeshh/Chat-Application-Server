@@ -120,7 +120,7 @@ const searchUser = async(req, res)=>{
     })
   }
 
-  const user = await searchUserService(
+  const users = await searchUserService(
     req.user.authUserId,
     q.trim(),
     Number(page),
