@@ -4,7 +4,8 @@ const {createUserService,
   blockUserService,
   unblockService,
   blockListService,
-  checkBlockService
+  checkBlockService,
+  searchUserService
 } = require("../services/user.service")
 
 const createUser = async(req, res)=>{
@@ -110,4 +111,32 @@ const checkBlock = async(req, res)=>{
   res.status(200).json(blocked)
 }
 
-module.exports = {createUser, getMyProfile, updateUser, blockUser, blockList, unblockUser, checkBlock}
+const searchUser = async(req, res)=>{
+  const {q, page=1, limit=20} = req.query;
+
+  if(!q || q.trim() === ""){
+    return res.status(400).json({
+      message:"Search query is required"
+    })
+  }
+
+  const user = await searchUserService(
+    req.user.authUserId,
+    q.trim(),
+    Number(page),
+    Number((limit))
+  )
+
+  res.status(200).json(users);
+}
+
+module.exports = {
+  createUser, 
+  getMyProfile, 
+  updateUser, 
+  blockUser, 
+  blockList, 
+  unblockUser, 
+  checkBlock,
+  searchUser
+}
