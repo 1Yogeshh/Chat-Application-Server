@@ -169,12 +169,66 @@ const checkBlockService = async(senderAuthUserId, receiverAuthUserId)=>{
 }
 
 const searchUserService = async(
-    authUserId, 
+    myAuthUserId, 
     searchText, 
     page=1, 
     limit=20
 )=>{
-    
+    const skip = (page - 1) * limit;
+
+    //users I blocked
+    const blockedByMe = await prisma.blockedUser.findMany({
+        where:{
+            blockerAuthUserId: myAuthUserId
+        },
+        select:{
+            blockedAuthUserId: true
+        }
+    })
+
+    //users who blocked me 
+    const blockedMe = await prisma.blockedUser.findMany({
+        where:{
+            blockedAuthUserId: myAuthUserId
+        },
+        select:{
+            blockerAuthUserId: true
+        }
+    })
+
+    const excludes = [
+        myAuthUserId,
+        ...blockedByMe.map(u=>u.blockedAuthUserId),
+        ...blockedMe.map(u=>u.blockerAuthUserId)
+    ]
+
+    return prisma.user.findMany({
+        where:{
+            authUserId: { notIn: excludes},
+            OR:[
+                {
+                    name:{
+                        contains:searchText,
+                        mode: "insensitive"
+                    }
+                },
+                {
+                    email: {
+                        contains: searchText,
+                        mode: "insensitive"
+                    }
+                }
+            ]
+        },
+        select:{
+            authUserId:true,
+            name:true,
+            email:true,
+            isActive:true
+        },
+        skip,
+        take: limit
+    })
 }
 
 module.exports = { 
@@ -184,5 +238,6 @@ module.exports = {
     blockUserService,
     unblockService, 
     blockListService ,
-    checkBlockService
+    checkBlockService,
+    searchUserService
 }
