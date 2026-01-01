@@ -168,6 +168,15 @@ const checkBlockService = async(senderAuthUserId, receiverAuthUserId)=>{
     return !!blocked
 }
 
+const searchUserService = async(
+    authUserId, 
+    searchText, 
+    page=1, 
+    limit=20
+)=>{
+    
+}
+
 module.exports = { 
     createUserService, 
     getMyProfileService, 
