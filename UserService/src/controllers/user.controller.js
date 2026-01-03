@@ -1,5 +1,6 @@
 const {createUserService, 
   getMyProfileService, 
+  getUserProfileService,
   updateUserService, 
   blockUserService,
   unblockService,
@@ -43,12 +44,25 @@ const getMyProfile = async(req, res)=>{
     const user = await getMyProfileService(authUserId)
 
     if(!user || !user.isActive){
-        return res.status(404).json({
+      return res.status(404).json({
         message: "User not found or blocked"
-    });
+      });
     }
 
     res.status(200).json(user);
+}
+
+const getUserProfile = async(req, res)=>{
+  try {
+    const profile = await getUserProfileService(
+      req.user.authUserId,
+      req.params.authUserId
+    )
+
+    res.status(200).json(profile)
+  } catch (error) {
+    res.status(403).json({message:err.message})
+  }
 }
 
 const updateUser = async(req, res)=>{
@@ -133,6 +147,7 @@ const searchUser = async(req, res)=>{
 module.exports = {
   createUser, 
   getMyProfile, 
+  getUserProfile,
   updateUser, 
   blockUser, 
   blockList, 

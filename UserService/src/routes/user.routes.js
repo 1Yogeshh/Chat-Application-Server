@@ -5,6 +5,7 @@ const protect = require("../middleware/userMiddleware")
 const {
     createUser, 
     getMyProfile, 
+    getUserProfile,
     updateUser, 
     blockUser, 
     blockList, 
@@ -23,6 +24,7 @@ router.get("/me", protect,(req, res)=>{
 
 router.post("/create", protect, createUser  )
 router.get("/myprofile", protect, getMyProfile)
+router.get("/userProfile/:authUserId", protect, getUserProfile)
 router.put("/update", protect, updateUser)
 
 router.post("/block/:blockedAuthUserId", protect, blockUser)

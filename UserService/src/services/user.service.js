@@ -36,6 +36,48 @@ const getMyProfileService = async(authUserId) => {
     })
 }
 
+//get another user profile
+const getUserProfileService = async(myAuthUserId, targetAuthUserId) =>{
+    if(myAuthUserId===targetAuthUserId){
+        throw new Error("This is your own id not user id")
+    }
+
+    const targetUser = await prisma.user.findUnique({
+        where:{authUserId:targetAuthUserId},
+        select:{
+            authUserId:true,
+            name:true,
+            email:true,
+            isActive:true
+        }
+    })
+
+    if(!targetUser || !targetUser.isActive){
+        throw new Error("User not Found")
+    }
+
+   const blocked = await prisma.blockedUser.findFirst({
+        where: {
+      OR: [
+        {
+          blockerAuthUserId: myAuthUserId,
+          blockedAuthUserId: targetAuthUserId
+        },
+        {
+          blockerAuthUserId: targetAuthUserId,
+          blockedAuthUserId: myAuthUserId
+        }
+      ]
+    }
+    })
+
+    if(blocked){
+        throw new Error("You cannot view this profile")
+    }
+
+    return targetUser;
+}
+
 //update user
 const updateUserService = async(authUserId, name)=>{
     return prisma.user.update({
@@ -100,9 +142,9 @@ const unblockService = async(blockerAuthUserId, blockedAuthUserId)=>{
     await prisma.blockedUser.delete({
         where:{
             blockerAuthUserId_blockedAuthUserId: {
-        blockerAuthUserId,
-        blockedAuthUserId
-      }
+                blockerAuthUserId,
+                blockedAuthUserId
+            }
         }
     })
 }
@@ -234,6 +276,7 @@ const searchUserService = async(
 module.exports = { 
     createUserService, 
     getMyProfileService, 
+    getUserProfileService,
     updateUserService, 
     blockUserService,
     unblockService, 
