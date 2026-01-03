@@ -86,7 +86,7 @@ const updateUserService = async(authUserId, name)=>{
     })
 }
 
-//helper check user exists
+//helper check user exist or not
 const userExists = async(authUserId)=>{
     const user = await prisma.user.findUnique({
         where:{
