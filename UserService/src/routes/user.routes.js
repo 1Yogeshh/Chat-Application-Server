@@ -3,26 +3,26 @@ const router = express.Router()
 
 const protect = require("../middleware/userMiddleware")
 const {
-    createUser, 
-    getMyProfile, 
+    createUser,
+    getMyProfile,
     getUserProfile,
-    updateUser, 
-    blockUser, 
-    blockList, 
-    unblockUser, 
+    updateUser,
+    blockUser,
+    blockList,
+    unblockUser,
     checkBlock,
     searchUser
 } = require("../controllers/user.controller")
 
 
-router.get("/me", protect,(req, res)=>{
+router.get("/me", protect, (req, res) => {
     res.json({
         message: "User profile",
         user: req.user,
     })
-} )
+})
 
-router.post("/create", protect, createUser  )
+router.post("/create", protect, createUser)
 router.get("/myprofile", protect, getMyProfile)
 router.get("/userProfile/:authUserId", protect, getUserProfile)
 router.put("/update", protect, updateUser)

@@ -7,16 +7,16 @@ const app = express()
 const port = 5001
 
 app.use(express.json())
-app.use(cookieParser()); 
+app.use(cookieParser());
 
-app.listen(port, ()=>{
-    console.log(`user service start.... ${port}`)
+app.listen(port, () => {
+  console.log(`user service start.... ${port}`)
 })
 
 app.use("/user", userRoutes)
 
-app.get("/db-check", async(req, res)=>{
-    try {
+app.get("/db-check", async (req, res) => {
+  try {
     await prisma.$queryRaw`SELECT 1`;
     console.log("hello world!")
     res.json({ status: "SUCCESS", message: "DB connected ✅" });

@@ -1,7 +1,7 @@
-const {createUserService, 
-  getMyProfileService, 
+const { createUserService,
+  getMyProfileService,
   getUserProfileService,
-  updateUserService, 
+  updateUserService,
   blockUserService,
   unblockService,
   blockListService,
@@ -9,30 +9,30 @@ const {createUserService,
   searchUserService
 } = require("../services/user.service")
 
-const createUser = async(req, res)=>{
-    const {authUserId, email} = req.user;
-    const {name, username} = req.body
+const createUser = async (req, res) => {
+  const { authUserId, email } = req.user;
+  const { name, username } = req.body
 
-    if (!username || username.trim() === "") {
+  if (!username || username.trim() === "") {
     return res.status(400).json({ message: "Username is required" });
-    }
+  }
 
-    const cleanUsername = username.trim().toLowerCase();
+  const cleanUsername = username.trim().toLowerCase();
 
-    if(!name || name.trim()===""){
-        return res.status(400).json({
-            message:"Name is required"
-        })
-    }
-
-    const result = await createUserService({
-        authUserId,
-        email,
-        name,
-        username: cleanUsername
+  if (!name || name.trim() === "") {
+    return res.status(400).json({
+      message: "Name is required"
     })
+  }
 
-    if (result.alreadyExits) {
+  const result = await createUserService({
+    authUserId,
+    email,
+    name,
+    username: cleanUsername
+  })
+
+  if (result.alreadyExits) {
     return res.status(409).json({
       message: "User already exists",
       user: result.user
@@ -45,21 +45,21 @@ const createUser = async(req, res)=>{
   });
 }
 
-const getMyProfile = async(req, res)=>{
-    const {authUserId} = req.user;
+const getMyProfile = async (req, res) => {
+  const { authUserId } = req.user;
 
-    const user = await getMyProfileService(authUserId)
+  const user = await getMyProfileService(authUserId)
 
-    if(!user || !user.isActive){
-      return res.status(404).json({
-        message: "User not found or blocked"
-      });
-    }
+  if (!user || !user.isActive) {
+    return res.status(404).json({
+      message: "User not found or blocked"
+    });
+  }
 
-    res.status(200).json(user);
+  res.status(200).json(user);
 }
 
-const getUserProfile = async(req, res)=>{
+const getUserProfile = async (req, res) => {
   try {
     const profile = await getUserProfileService(
       req.user.authUserId,
@@ -68,7 +68,7 @@ const getUserProfile = async(req, res)=>{
 
     res.status(200).json(profile)
   } catch (error) {
-    res.status(403).json({message:err.message})
+    res.status(403).json({ message: err.message })
   }
 }
 
@@ -104,20 +104,20 @@ const updateUser = async (req, res) => {
   }
 };
 
-const blockUser = async(req, res)=>{
+const blockUser = async (req, res) => {
   try {
-    const {authUserId} = req.user;
+    const { authUserId } = req.user;
     await blockUserService(authUserId, req.params.blockedAuthUserId);
 
-    res.status(200).json({message:"User blocked successfully"})
+    res.status(200).json({ message: "User blocked successfully" })
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 }
 
-const unblockUser = async(req, res)=>{
+const unblockUser = async (req, res) => {
   try {
-    const {authUserId} = req.user;
+    const { authUserId } = req.user;
     await unblockService(authUserId, req.params.blockedAuthUserId)
 
     res.status(200).json({ message: "User unblocked successfully" });
@@ -126,13 +126,13 @@ const unblockUser = async(req, res)=>{
   }
 }
 
-const blockList = async(req, res)=>{
-  const {authUserId} = req.user;
+const blockList = async (req, res) => {
+  const { authUserId } = req.user;
   const list = await blockListService(authUserId)
   res.status(200).json(list)
 }
 
-const checkBlock = async(req, res)=>{
+const checkBlock = async (req, res) => {
   const { receiverAuthUserId } = req.query;
 
   if (!receiverAuthUserId) {
@@ -146,12 +146,12 @@ const checkBlock = async(req, res)=>{
   res.status(200).json(blocked)
 }
 
-const searchUser = async(req, res)=>{
-  const {q, page=1, limit=20} = req.query;
+const searchUser = async (req, res) => {
+  const { q, page = 1, limit = 20 } = req.query;
 
-  if(!q || q.trim() === ""){
+  if (!q || q.trim() === "") {
     return res.status(400).json({
-      message:"Search query is required"
+      message: "Search query is required"
     })
   }
 
@@ -166,13 +166,13 @@ const searchUser = async(req, res)=>{
 }
 
 module.exports = {
-  createUser, 
-  getMyProfile, 
+  createUser,
+  getMyProfile,
   getUserProfile,
-  updateUser, 
-  blockUser, 
-  blockList, 
-  unblockUser, 
+  updateUser,
+  blockUser,
+  blockList,
+  unblockUser,
   checkBlock,
   searchUser
 }
