@@ -11,7 +11,13 @@ const {createUserService,
 
 const createUser = async(req, res)=>{
     const {authUserId, email} = req.user;
-    const {name} = req.body
+    const {name, username} = req.body
+
+    if (!username || username.trim() === "") {
+    return res.status(400).json({ message: "Username is required" });
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
 
     if(!name || name.trim()===""){
         return res.status(400).json({
@@ -22,7 +28,8 @@ const createUser = async(req, res)=>{
     const result = await createUserService({
         authUserId,
         email,
-        name
+        name,
+        username: cleanUsername
     })
 
     if (result.alreadyExits) {
@@ -65,23 +72,37 @@ const getUserProfile = async(req, res)=>{
   }
 }
 
-const updateUser = async(req, res)=>{
-  const {authUserId} = req.user;
-  const {name} = req.body;
+const updateUser = async (req, res) => {
+  try {
+    const { authUserId } = req.user;
+    const { name, username } = req.body;
 
-  if(!name || name.trim()===""){
-        return res.status(400).json({
-            message:"Name is required"
-        })
+    // ❌ no fields provided
+    if (
+      (!name || name.trim() === "") &&
+      (!username || username.trim() === "")
+    ) {
+      return res.status(400).json({
+        message: "At least one field (name or username) is required"
+      });
+    }
+
+    const user = await updateUserService({
+      authUserId,
+      name,
+      username
+    });
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      user
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    });
   }
-
-  const user = await updateUserService(authUserId, name);
-
-  res.status(200).json({
-    message:"profile updated successfully",
-    user
-  })
-}
+};
 
 const blockUser = async(req, res)=>{
   try {

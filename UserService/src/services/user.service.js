@@ -1,6 +1,15 @@
 const prisma = require("../prisma")
 
-const createUserService = async({ authUserId, email, name }) => {
+const createUserService = async({ authUserId, email, name, username }) => {
+
+    const usernameTaken = await prisma.user.findUnique({
+    where: { username }
+  });
+
+  if (usernameTaken) {
+    throw new Error("Username already taken");
+  }
+    
     const existUser = await prisma.user.findUnique({
         where: { authUserId }
     })
@@ -18,6 +27,7 @@ const createUserService = async({ authUserId, email, name }) => {
             authUserId,
             email,
             name: name.trim(),
+            username,
             role: "USER",
             isActive: true
         }
@@ -47,6 +57,7 @@ const getUserProfileService = async(myAuthUserId, targetAuthUserId) =>{
         select:{
             authUserId:true,
             name:true,
+            username:true,
             email:true,
             isActive:true
         }
@@ -78,13 +89,53 @@ const getUserProfileService = async(myAuthUserId, targetAuthUserId) =>{
     return targetUser;
 }
 
-//update user
-const updateUserService = async(authUserId, name)=>{
-    return prisma.user.update({
-        where:{authUserId},
-        data :{name:name.trim()}
-    })
-}
+const updateUserService = async ({ authUserId, name, username }) => {
+  const data = {};
+
+  // ✅ name update (optional)
+  if (name && name.trim() !== "") {
+    data.name = name.trim();
+  }
+
+  // ✅ username update (optional)
+  if (username && username.trim() !== "") {
+    const cleanUsername = username.trim().toLowerCase();
+
+    // 🔥 check username uniqueness (exclude self)
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        username: cleanUsername,
+        NOT: {
+          authUserId: authUserId
+        }
+      }
+    });
+
+    if (existingUser) {
+      throw new Error("Username already taken");
+    }
+
+    data.username = cleanUsername;
+  }
+
+  // ❌ nothing to update
+  if (Object.keys(data).length === 0) {
+    throw new Error("Nothing to update");
+  }
+
+  return prisma.user.update({
+    where: { authUserId },
+    data,
+    select: {
+      authUserId: true,
+      name: true,
+      username: true,
+      email: true,
+      isActive: true,
+      updatedAt: true
+    }
+  });
+};
 
 //helper check user exist or not
 const userExists = async(authUserId)=>{
@@ -259,7 +310,13 @@ const searchUserService = async(
                         contains: searchText,
                         mode: "insensitive"
                     }
-                }
+                },
+  {
+    username: {
+      contains: searchText,
+      mode: "insensitive"
+    }
+  }
             ]
         },
         select:{
