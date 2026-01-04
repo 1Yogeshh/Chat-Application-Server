@@ -8,18 +8,18 @@ datasource db {
 }
 
 model Chat {
-  id   String  @id @default(uuid())
-  type ChatType
-  createdAt  DateTime @default(now())
+  id            String  @id @default(uuid())
+  type          ChatType
+  createdAt     DateTime @default(now())
 
   participants  ChatParticipant[]
-  message    Message[]
+  message       Message[]
 }
 
 model ChatParticipant {
-  id   String  @id @default(uuid())
-  chatId String
-  userId String
+  id                String  @id @default(uuid())
+  chatId            String
+  userId            String
   lastReadMessageId String?
 
   chat Chat @relation(fields:[chatId], references:[id])
@@ -28,11 +28,11 @@ model ChatParticipant {
 }
 
 model Message {
-  id   String  @id @default(uuid())
-  chatId String
-  senderid String
-  content  String
-  status   MessageStatus
+  id         String  @id @default(uuid())
+  chatId     String
+  senderid   String
+  content    String
+  status     MessageStatus
   createdAt  DateTime @default(now())
 
   chat Chat @relation(fields:[chatId], references:[id])
