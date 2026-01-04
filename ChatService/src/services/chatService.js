@@ -1,5 +1,6 @@
 const prisma = require("../prisma");
 
+//create private chat service
 const getPrivateChatService = async (me, other) => {
     //if chat already exist
     let chat = await prisma.chat.findFirst({

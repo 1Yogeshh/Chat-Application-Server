@@ -11,6 +11,7 @@ router.get("/me", protect, (req, res) => {
     })
 })
 
+//route of private chat
 router.get("/private/:otherUserId", protect,getPrivateChat)
 
 module.exports = router
