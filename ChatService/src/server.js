@@ -12,11 +12,6 @@ app.use(express.json());
 // routes
 app.use("/chat", router);
 
-// health check (optional but recommended)
-app.get("/health", (req, res) => {
-  res.json({ status: "Chat service running" });
-});
-
 // start server
 app.listen(port, () => {
   console.log(`Chat service started on port ${port}`);
