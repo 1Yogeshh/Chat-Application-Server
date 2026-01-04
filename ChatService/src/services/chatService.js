@@ -1,7 +1,8 @@
 const prisma = require("../prisma");
 
 const getPrivateChatService = async (me, other) => {
-  let chat = await prisma.chat.findFirst({
+    //if chat already exist
+    let chat = await prisma.chat.findFirst({
     where: {
       type: "PRIVATE",
       AND: [
@@ -19,6 +20,7 @@ const getPrivateChatService = async (me, other) => {
     }
   });
 
+  //if chat not exist then create a chat
   if (!chat) {
     chat = await prisma.chat.create({
       data: {
