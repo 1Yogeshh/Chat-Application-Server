@@ -30,7 +30,7 @@ model ChatParticipant {
 model Message {
   id         String  @id @default(uuid())
   chatId     String
-  senderid   String
+  senderId   String
   content    String
   status     MessageStatus
   createdAt  DateTime @default(now())

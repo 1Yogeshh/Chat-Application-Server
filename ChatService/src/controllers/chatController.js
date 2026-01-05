@@ -1,4 +1,4 @@
-const getPrivateChatService = require("../services/chatService")
+const {getPrivateChatService,sendMessageService} = require("../services/chatService")
 
 //controller of private chat
 const getPrivateChat = async(req, res)=>{
@@ -9,4 +9,13 @@ const getPrivateChat = async(req, res)=>{
     res.json({chat})
 }
 
-module.exports = getPrivateChat
+const sendMessage = async(req, res)=>{
+    const msg = await sendMessageService({
+        chatId: req.body.chatId,
+        senderId: req.user.authUserId,
+        content:req.body.content
+    })
+    res.json(msg)
+}
+
+module.exports = {getPrivateChat, sendMessage}
