@@ -31,10 +31,11 @@ const getPrivateChatService = async (me, other) => {
             }
         });
     }
-
     return chat;
 };
 
+
+//send message service
 const sendMessageService = async ({ chatId, senderId, content }) => {
     const message = await prisma.message.create({
         data: {
@@ -47,9 +48,10 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
     return message
 }
 
+//get message service
 const getMessageService = async ({ chatId, userId }) => {
 
-    // 1️⃣ Validate user belongs to chat
+    //Validate user belongs to chat
     const participant = await prisma.chatParticipant.findUnique({
         where: {
             chatId_userId: {
@@ -59,6 +61,7 @@ const getMessageService = async ({ chatId, userId }) => {
         }
     });
 
+    //if not belongs to chat
     if (!participant) {
         throw new Error("Access denied: Not a participant of this chat");
     }
@@ -74,6 +77,7 @@ const getMessageService = async ({ chatId, userId }) => {
 
     const lastMessageId = message[message.length - 1].id;
 
+    //update last message read id
     await prisma.chatParticipant.update({
         where: {
             chatId_userId: {
