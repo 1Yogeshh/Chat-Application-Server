@@ -1,4 +1,5 @@
 const prisma = require("../prisma");
+const redis = require("../config/redis")
 
 //create private chat service
 const getPrivateChatService = async (me, other) => {
@@ -45,6 +46,17 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
             status: "SENT"
         }
     })
+
+    await redis.publish(
+        "chat-events",
+        JSON.stringify({
+            type: "New_MESSAGE",
+            chatId,
+            senderId,
+            message
+        })
+    )
+    
     return message
 }
 
