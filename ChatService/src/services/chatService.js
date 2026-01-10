@@ -2,21 +2,21 @@ const prisma = require("../prisma");
 const redis = require("../config/redis")
 
 //create private chat service
-const getPrivateChatService = async (me, other) => {
+const getPrivateChatService = async(me, other) => {
     //if chat already exist
     let chat = await prisma.chat.findFirst({
         where: {
             type: "PRIVATE",
             AND: [{
-                participants: {
-                    some: { userId: me }
+                    participants: {
+                        some: { userId: me }
+                    }
+                },
+                {
+                    participants: {
+                        some: { userId: other }
+                    }
                 }
-            },
-            {
-                participants: {
-                    some: { userId: other }
-                }
-            }
             ]
         }
     });
@@ -37,7 +37,7 @@ const getPrivateChatService = async (me, other) => {
 
 
 //send message service
-const sendMessageService = async ({ chatId, senderId, content }) => {
+const sendMessageService = async({ chatId, senderId, content }) => {
     const message = await prisma.message.create({
         data: {
             chatId,
@@ -56,12 +56,12 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
             message
         })
     )
-    
+
     return message
 }
 
 //get message service
-const getMessageService = async ({ chatId, userId }) => {
+const getMessageService = async({ chatId, userId }) => {
 
     //Validate user belongs to chat
     const participant = await prisma.chatParticipant.findUnique({
@@ -116,5 +116,7 @@ const getMessageService = async ({ chatId, userId }) => {
 
     return message
 }
+
+const markSeenService = async({ chatId, userId }) => {}
 
 module.exports = { getPrivateChatService, sendMessageService, getMessageService };
