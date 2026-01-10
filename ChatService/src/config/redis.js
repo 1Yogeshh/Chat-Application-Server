@@ -1,17 +1,17 @@
-const { createClient } = require("redis")
+// const { createClient } = require("redis")
 
-const redis = createClient({
-    url: process.env.REDIS_URL
-})
+// const redis = createClient({
+//     url: process.env.REDIS_URL
+// })
 
-redis.on("connect",()=>{
-    console.log("redis connected")
-})
+// redis.on("connect",()=>{
+//     console.log("redis connected")
+// })
 
-redis.on("error",(err)=>{
-    console.log("Redis Error", err)
-})
+// redis.on("error",(err)=>{
+//     console.log("Redis Error", err)
+// })
 
-redis.connect()
+// redis.connect()
 
-module.exports = redis
+// module.exports = redis
