@@ -9,33 +9,33 @@ const initSocket = require("./socket");
 const app = express();
 const port = 5002;
 
-// middleware
+//middleware
 app.use(express.json());
 
-// routes
+//routes
 app.use("/chat", router);
 
-// ✅ HTTP server banao
+//HTTP server banao
 const server = http.createServer(app);
 
-// ✅ socket attach karo
+//socket attach karo
 initSocket(server);
 
-// ✅ server start
+//server start
 server.listen(port, () => {
-  console.log(`Chat service + Socket.IO started on port ${port}`);
+    console.log(`Chat service + Socket.IO started on port ${port}`);
 });
 
 // DB check
-app.get("/db-check", async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: "SUCCESS", message: "DB connected ✅" });
-  } catch (err) {
-    res.status(500).json({
-      status: "FAILED",
-      message: "DB connection failed ❌",
-      error: err.message,
-    });
-  }
-});
+// app.get("/db-check", async (req, res) => {
+//   try {
+//     await prisma.$queryRaw`SELECT 1`;
+//     res.json({ status: "SUCCESS", message: "DB connected ✅" });
+//   } catch (err) {
+//     res.status(500).json({
+//       status: "FAILED",
+//       message: "DB connection failed ❌",
+//       error: err.message,
+//     });
+//   }
+// });
