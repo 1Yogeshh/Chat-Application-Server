@@ -117,6 +117,7 @@ const getMessageService = async ({ chatId, userId }) => {
     return message
 }
 
+//seen message service
 const markSeenService = async ({ chatId, userId, lastSeenMessageId }) => {
     await prisma.$transaction([
         //update last message read id
