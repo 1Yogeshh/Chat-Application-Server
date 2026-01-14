@@ -25,17 +25,3 @@ initSocket(server);
 server.listen(port, () => {
     console.log(`Chat service + Socket.IO started on port ${port}`);
 });
-
-// DB check
-// app.get("/db-check", async (req, res) => {
-//   try {
-//     await prisma.$queryRaw`SELECT 1`;
-//     res.json({ status: "SUCCESS", message: "DB connected ✅" });
-//   } catch (err) {
-//     res.status(500).json({
-//       status: "FAILED",
-//       message: "DB connection failed ❌",
-//       error: err.message,
-//     });
-//   }
-// });
