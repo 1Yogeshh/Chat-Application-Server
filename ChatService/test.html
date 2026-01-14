@@ -1,20 +1,41 @@
 <!DOCTYPE html>
 <html>
-  <body>
-    <h2>Socket Test</h2>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script>
-      // 🔥 DIRECT socket server se connect
-      const socket = io("http://localhost:5002");
+<head>
+  <title>Socket Auth Test</title>
+</head>
 
-      socket.on("connect", () => {
-        console.log("🟢 Client connected:", socket.id);
-      });
+<body>
+  <h2>Socket.IO JWT Test</h2>
 
-      socket.on("disconnect", () => {
-        console.log("🔴 Client disconnected");
-      });
-    </script>
-  </body>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    // ⚠️ YAHAN APNA REAL JWT TOKEN PASTE KARO
+    const token =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDVlOGY5OS04ODUxLTQzYTUtOTM5NS1lYjJjNjBjYjE3N2MiLCJlbWFpbCI6Imtpc2hpa2FAZ21haWwuY29tIiwiaWF0IjoxNzY4NDEwODc0LCJleHAiOjE3NjkwMTU2NzR9.ik86_Z7Xf7QtQOrn5WCOf3aBlge5anl4i4xXkEDBp8Y";
+
+    // 🔐 socket connection with auth
+    const socket = io("http://localhost:5002", {
+      auth: {
+        token: token,
+      },
+    });
+
+    // ✅ success connection
+    socket.on("connect", () => {
+      console.log("🟢 Connected");
+      console.log("Socket ID:", socket.id);
+    });
+
+    // ❌ auth / connection error
+    socket.on("connect_error", (err) => {
+      console.log("🔴 Connection Error:", err.message);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("🟡 Disconnected");
+    });
+  </script>
+</body>
+
 </html>
