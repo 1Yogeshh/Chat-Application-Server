@@ -1,5 +1,6 @@
 const { Server } = require("socket.io");
 const auth = require("./socket.auth")
+const handlers = require("./socket.handlers")
 
 module.exports = (server) => {
         const io = new Server(server, {
@@ -11,6 +12,7 @@ module.exports = (server) => {
         io.use(auth)
 
         io.on("connection", (socket) => {
+                handlers(socket)
                 console.log("User connected:", socket.id);
                 console.log("✅ User connected:", socket.user.authUserId);
                 console.log("✅ User connected:", socket.user.email);
