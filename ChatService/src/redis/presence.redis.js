@@ -1,6 +1,6 @@
-const { redisPublisher } = require("../config/redis")
+const { redisClient } = require("../config/redis")
 
 exports.userOnline = async (authUserId, socketId) => {
-    await redisPublisher.sAdd(`user:${authUserId}:sockets`, socketId);
-    await redisPublisher.set(`user:${authUserId}:online`, "true")
+    await redisClient.sAdd(`user:${authUserId}:sockets`, socketId);
+    await redisClient.set(`user:${authUserId}:online`, "true")
 }
