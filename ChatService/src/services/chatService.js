@@ -47,16 +47,6 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
         }
     })
 
-    await redis.publish(
-        "chat-events",
-        JSON.stringify({
-            type: "New_MESSAGE",
-            chatId,
-            senderId,
-            message
-        })
-    )
-
     return message
 }
 
