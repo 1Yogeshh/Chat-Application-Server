@@ -1,4 +1,4 @@
-const prisma = require("../prisma");
+const prisma = require("../config/prisma");
 const redis = require("../config/redis")
 
 //create private chat service

@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const router = require("./routes/chat.routes");
-const prisma = require("./prisma");
+const prisma = require("./config/prisma");
 
 const http = require("http");
 const initSocket = require("./socket");
