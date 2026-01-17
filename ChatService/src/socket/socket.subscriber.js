@@ -3,8 +3,6 @@ const presence = require("../redis/presence.redis")
 
 module.exports = async (io) => {
     await redisSubscriber.subscribe("chat-events", async (message) => {
-        console.log("🔥 REDIS EVENT RECEIVED:", message);
-
         const event = JSON.parse(message);
 
         if (event.type === "NEW_MESSAGE") {
