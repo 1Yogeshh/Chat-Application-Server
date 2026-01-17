@@ -2,38 +2,51 @@
 <html>
 
 <head>
-  <title>Socket Auth Test</title>
+  <title>Chat Receiver</title>
 </head>
 
 <body>
-  <h2>Socket.IO JWT Test</h2>
+  <h2>📥 Chat Receiver</h2>
+
+  <input id="activeChatId" placeholder="Active Chat ID" />
+  <br /><br />
+
+  <ul id="messages"></ul>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
-    // ⚠️ YAHAN APNA REAL JWT TOKEN PASTE KARO
+    // 🔐 RECEIVER JWT TOKEN
     const token =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDVlOGY5OS04ODUxLTQzYTUtOTM5NS1lYjJjNjBjYjE3N2MiLCJlbWFpbCI6Imtpc2hpa2FAZ21haWwuY29tIiwiaWF0IjoxNzY4NDk1MzMxLCJleHAiOjE3NjkxMDAxMzF9.5Z71_DcSFJ1QvAwMMeuIOS3tj6LCm2MbSdP3_1a2Fbs";
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI4ZmM1YTVhYi1hNzk3LTQ3ZDUtOTcyMi01ZDA0ZWRlZTA2MWEiLCJlbWFpbCI6Imt1bWFyQGdtYWlsLmNvbSIsImlhdCI6MTc2ODY2NzY0NywiZXhwIjoxNzY5MjcyNDQ3fQ.WDftkO77gWDadNA6jnsTk8nQh5b7gN-hoCvxOHelfs0";
 
-    // 🔐 socket connection with auth
     const socket = io("http://localhost:5002", {
-      auth: {
-        token: token,
-      },
+      auth: { token },
     });
 
-    // ✅ success connection
     socket.on("connect", () => {
-      console.log("🟢 Connected");
-      console.log("Socket ID:", socket.id);
+      console.log("🟢 Receiver Connected:", socket.id);
     });
 
-    // ❌ auth / connection error
     socket.on("connect_error", (err) => {
-      console.log("🔴 Connection Error:", err.message);
+      console.log("🔴 Receiver Error:", err.message);
     });
 
-    socket.on("disconnect", () => {
-      console.log("🟡 Disconnected");
+    // 📥 Listen for new messages
+    socket.on("new-message", (message) => {
+      const activeChatId =
+        document.getElementById("activeChatId").value;
+
+      // ✅ chatId match check
+      if (message.chatId !== activeChatId) {
+        console.log("⏭ Message ignored (different chat)");
+        return;
+      }
+
+      const li = document.createElement("li");
+      li.innerText = `${message.senderId}: ${message.content}`;
+      document.getElementById("messages").appendChild(li);
+
+      console.log("📥 Message received:", message);
     });
   </script>
 </body>

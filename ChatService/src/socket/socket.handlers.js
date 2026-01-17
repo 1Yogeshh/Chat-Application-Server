@@ -16,6 +16,8 @@ module.exports = (socket) => {
             content
         })
 
+        console.log("📦 Publishing event for:", receiverId)
+
         redisPublisher.publish("chat-events", JSON.stringify({
             type: "NEW_MESSAGE",
             receiverId,

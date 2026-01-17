@@ -6,8 +6,8 @@ exports.userOnline = async (authUserId, socketId) => {
     await redisClient.set(`user:${authUserId}:online`, "true")
 
     // safety TTL (optional but recommended)
-    await redis.expire(`user:${authUserId}:sockets`, 60 * 60 * 24); // 1 day
-    await redis.expire(`user:${authUserId}:online`, 60 * 60 * 24);
+    await redisClient.expire(`user:${authUserId}:sockets`, 60 * 60 * 24); // 1 day
+    await redisClient.expire(`user:${authUserId}:online`, 60 * 60 * 24);
 }
 
 //User Offline

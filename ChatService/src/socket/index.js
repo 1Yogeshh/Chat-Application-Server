@@ -1,8 +1,9 @@
 const { Server } = require("socket.io");
 const auth = require("./socket.auth")
 const handlers = require("./socket.handlers")
+const subscribe = require("./socket.subscriber")
 
-module.exports = (server) => {
+module.exports = async (server) => {
         const io = new Server(server, {
                 cors: {
                         origin: "*"
@@ -22,4 +23,6 @@ module.exports = (server) => {
                 });
 
         });
+
+        await subscribe(io)
 }
