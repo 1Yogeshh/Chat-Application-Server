@@ -15,7 +15,7 @@ module.exports = (socket) => {
             senderId: authUserId,
             content
         })
-
+//redis publish chat events
         redisPublisher.publish("chat-events", JSON.stringify({
             type: "NEW_MESSAGE",
             receiverId,
