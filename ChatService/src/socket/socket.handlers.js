@@ -8,7 +8,7 @@ module.exports = (socket) => {
     console.log("hello world! : ", authUserId)
 
     presence.userOnline(authUserId, socket.id)
-
+//send message socket
     socket.on("send-message", async ({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
