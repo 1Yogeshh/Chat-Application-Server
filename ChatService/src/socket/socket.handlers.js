@@ -9,6 +9,7 @@ module.exports = (socket) => {
 
     presence.userOnline(authUserId, socket.id)
 
+    //send message
     socket.on("send-message", async ({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
@@ -23,6 +24,7 @@ module.exports = (socket) => {
         }))
     })
 
+    //mark seen message 
     socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
         await markSeenService({
             chatId,
