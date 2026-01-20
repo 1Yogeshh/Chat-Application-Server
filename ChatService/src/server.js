@@ -13,7 +13,7 @@ const port = 5002;
 app.use(express.json());
 
 //routes
-app.use("/chat", router);
+app.use("/", router);
 
 //HTTP server banao
 const server = http.createServer(app);

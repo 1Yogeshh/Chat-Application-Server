@@ -13,7 +13,7 @@ app.listen(port, () => {
   console.log(`user service start.... ${port}`)
 })
 
-app.use("/user", userRoutes)
+app.use("/", userRoutes)
 
 app.get("/db-check", async (req, res) => {
   try {
