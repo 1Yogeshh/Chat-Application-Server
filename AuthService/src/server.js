@@ -14,7 +14,7 @@ app.listen(port, () => {
     console.log(`server start successfully! ${port}`)
 })
 
-app.use("/auth", authRoutes);
+app.use("/", authRoutes);
 
 app.get("/db-check", async(req, res) => {
     try {
