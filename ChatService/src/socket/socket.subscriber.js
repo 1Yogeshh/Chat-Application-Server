@@ -5,6 +5,7 @@ module.exports = async (io) => {
     await redisSubscriber.subscribe("chat-events", async (message) => {
         const event = JSON.parse(message);
 
+        // new message
         if (event.type === "NEW_MESSAGE") {
             if (await presence.isUserOnline(event.receiverId)) {
                 const sockets = await presence.getUserSockets(event.receiverId);
@@ -14,5 +15,15 @@ module.exports = async (io) => {
                 });
             }
         }
+
+        //message seen
+        if (event.type === "MESSAGE_SEEN") {
+            io.to(event.chatId).emit("message-seen", {
+                chatId: event.chatId,
+                lastSeenMessageId: event.lastSeenMessageId,
+                userId: event.userId
+            })
+        }
+
     });
 }

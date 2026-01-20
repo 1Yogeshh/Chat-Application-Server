@@ -128,7 +128,8 @@ const markSeenService = async ({ chatId, userId, lastSeenMessageId }) => {
             where: {
                 chatId,
                 senderId: { not: userId },
-                id: { lte: lastSeenMessageId }
+                id: { lte: lastSeenMessageId },
+                status: { not: "SEEN" }
             },
             data: {
                 status: "SEEN"
