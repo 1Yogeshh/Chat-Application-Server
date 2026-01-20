@@ -15,13 +15,6 @@ const {
 } = require("../controllers/user.controller")
 
 
-router.get("/me", protect, (req, res) => {
-    res.json({
-        message: "User profile",
-        user: req.user,
-    })
-})
-
 router.post("/create", protect, createUser)
 router.get("/myprofile", protect, getMyProfile)
 router.get("/userProfile/:authUserId", protect, getUserProfile)
