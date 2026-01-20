@@ -37,7 +37,23 @@ const getPrivateChatService = async (me, other) => {
 
 //get all chats
 const getUserChatService = async (userId) => {
-
+    return prisma.chat.findMany({
+        where: {
+            participants: {
+                some: { userId }
+            }
+        },
+        include: {
+            participants: true,
+            message: {
+                take: 1,
+                orderBy: { createdAt: "desc" } // last message
+            }
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    })
 }
 
 
