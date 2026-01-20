@@ -1,7 +1,7 @@
 const { message } = require("../config/prisma")
 const { redisPublisher } = require("../config/redis")
 const presence = require("../redis/presence.redis")
-const { sendMessageService } = require("../services/chatService")
+const { sendMessageService, markSeenService } = require("../services/chatService")
 
 module.exports = (socket) => {
     const authUserId = socket.user.authUserId
@@ -16,10 +16,25 @@ module.exports = (socket) => {
             content
         })
 
-        redisPublisher.publish("chat-events", JSON.stringify({
+        await redisPublisher.publish("chat-events", JSON.stringify({
             type: "NEW_MESSAGE",
             receiverId,
             message: msg
+        }))
+    })
+
+    socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
+        await markSeenService({
+            chatId,
+            userId: authUserId,
+            lastSeenMessageId
+        })
+
+        await redisPublisher.publish("chat-events", JSON.stringify({
+            type: "MESSAGE_SEEN",
+            chatId,
+            lastSeenMessageId,
+            userId: authUserId
         }))
     })
 
