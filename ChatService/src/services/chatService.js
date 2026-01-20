@@ -160,4 +160,10 @@ const markSeenService = async ({ chatId, userId, lastSeenMessageId }) => {
     ])
 }
 
-module.exports = { getPrivateChatService, sendMessageService, getMessageService, markSeenService };
+module.exports = {
+    getPrivateChatService,
+    sendMessageService,
+    getMessageService,
+    markSeenService,
+    getUserChatService
+};
