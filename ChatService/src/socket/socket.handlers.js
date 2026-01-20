@@ -5,7 +5,6 @@ const { sendMessageService, markSeenService } = require("../services/chatService
 
 module.exports = (socket) => {
     const authUserId = socket.user.authUserId
-    console.log("hello world! : ", authUserId)
 
     presence.userOnline(authUserId, socket.id)
 
