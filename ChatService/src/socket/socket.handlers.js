@@ -4,15 +4,15 @@ const presence = require("../redis/presence.redis")
 const { sendMessageService, markSeenService } = require("../services/chatService")
 
 module.exports = (socket) => {
-    const authUserId = socket.user.authUserId
+    const userId = socket.user.userId
 
-    presence.userOnline(authUserId, socket.id)
+    presence.userOnline(userId, socket.id)
 
     //send message
     socket.on("send-message", async ({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
-            senderId: authUserId,
+            senderId: userId,
             content
         })
 
@@ -27,7 +27,7 @@ module.exports = (socket) => {
     socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
         await markSeenService({
             chatId,
-            userId: authUserId,
+            userId: userId,
             lastSeenMessageId
         })
 
@@ -35,11 +35,11 @@ module.exports = (socket) => {
             type: "MESSAGE_SEEN",
             chatId,
             lastSeenMessageId,
-            userId: authUserId
+            userId: userId
         }))
     })
 
     socket.on("disconnect", () =>
-        presence.userOffline(authUserId, socket.id)
+        presence.userOffline(userId, socket.id)
     )
 }

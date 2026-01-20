@@ -30,4 +30,5 @@ const getMessage = async (req, res) => {
 }
 
 
+
 module.exports = { getPrivateChat, sendMessage, getMessage }

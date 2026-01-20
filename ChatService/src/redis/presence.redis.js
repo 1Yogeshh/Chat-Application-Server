@@ -1,20 +1,20 @@
 const { redisClient } = require("../config/redis")
 
 //User Online
-exports.userOnline = async (authUserId, socketId) => {
-    await redisClient.sAdd(`user:${authUserId}:sockets`, socketId);
-    await redisClient.set(`user:${authUserId}:online`, "true")
+exports.userOnline = async (userId, socketId) => {
+    await redisClient.sAdd(`user:${userId}:sockets`, socketId);
+    await redisClient.set(`user:${userId}:online`, "true")
 
     // safety TTL (optional but recommended)
-    await redisClient.expire(`user:${authUserId}:sockets`, 60 * 60 * 24); // 1 day
-    await redisClient.expire(`user:${authUserId}:online`, 60 * 60 * 24);
+    await redisClient.expire(`user:${userId}:sockets`, 60 * 60 * 24); // 1 day
+    await redisClient.expire(`user:${userId}:online`, 60 * 60 * 24);
 }
 
 //User Offline
-exports.userOffline = async (authUserId, socketId) => {
-    const socketKey = `user:${authUserId}:sockets`
-    const onlineKey = `user:${authUserId}:online`
-    const lastSeenKey = `user:${authUserId}:lastSeen`
+exports.userOffline = async (userId, socketId) => {
+    const socketKey = `user:${userId}:sockets`
+    const onlineKey = `user:${userId}:online`
+    const lastSeenKey = `user:${userId}:lastSeen`
     await redisClient.sRem(socketKey, socketId)
 
     const count = await redisClient.sCard(socketKey)
@@ -28,17 +28,17 @@ exports.userOffline = async (authUserId, socketId) => {
 }
 
 //Check User Online
-exports.isUserOnline = async (authUserId) => {
-    const status = await redisClient.get(`user:${authUserId}:online`);
+exports.isUserOnline = async (userId) => {
+    const status = await redisClient.get(`user:${userId}:online`);
     return status === "true";
 }
 
 //Get User Sockets
-exports.getUserSockets = async (authUserId) => {
-    return redisClient.sMembers(`user:${authUserId}:sockets`)
+exports.getUserSockets = async (userId) => {
+    return redisClient.sMembers(`user:${userId}:sockets`)
 }
 
 //Get Last Seen
-exports.getLastSeen = async (authUserId) => {
-    return redisClient.get(`user:${authUserId}:lastSeen`)
+exports.getLastSeen = async (userId) => {
+    return redisClient.get(`user:${userId}:lastSeen`)
 }

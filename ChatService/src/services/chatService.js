@@ -35,6 +35,11 @@ const getPrivateChatService = async (me, other) => {
     return chat;
 };
 
+//get all chats
+const getUserChatService = async (userId) => {
+
+}
+
 
 //send message service
 const sendMessageService = async ({ chatId, senderId, content }) => {
