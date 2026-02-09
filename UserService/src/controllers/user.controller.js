@@ -1,178 +1,213 @@
-const { createUserService,
-  getMyProfileService,
-  getUserProfileService,
-  updateUserService,
-  blockUserService,
-  unblockService,
-  blockListService,
-  checkBlockService,
-  searchUserService
+const {
+    createUserService,
+    getMyProfileService,
+    getUserProfileService,
+    updateUserService,
+    blockUserService,
+    unblockService,
+    blockListService,
+    checkBlockService,
+    searchUserService
 } = require("../services/user.service")
+const prisma = require("../prisma")
 
 const createUser = async (req, res) => {
-  const { authUserId, email } = req.user;
-  const { name, username } = req.body
+    const { authUserId, email } = req.user;
+    const { name, username } = req.body
 
-  if (!username || username.trim() === "") {
-    return res.status(400).json({ message: "Username is required" });
-  }
+    if (!username || username.trim() === "") {
+        return res.status(400).json({ message: "Username is required" });
+    }
 
-  const cleanUsername = username.trim().toLowerCase();
+    const cleanUsername = username.trim().toLowerCase();
 
-  if (!name || name.trim() === "") {
-    return res.status(400).json({
-      message: "Name is required"
+    if (!name || name.trim() === "") {
+        return res.status(400).json({
+            message: "Name is required"
+        })
+    }
+
+    const result = await createUserService({
+        authUserId,
+        email,
+        name,
+        username: cleanUsername
     })
-  }
 
-  const result = await createUserService({
-    authUserId,
-    email,
-    name,
-    username: cleanUsername
-  })
+    if (result.alreadyExits) {
+        return res.status(409).json({
+            message: "User already exists",
+            user: result.user
+        });
+    }
 
-  if (result.alreadyExits) {
-    return res.status(409).json({
-      message: "User already exists",
-      user: result.user
+    return res.status(201).json({
+        message: "User created successfully",
+        user: result.user
     });
-  }
-
-  return res.status(201).json({
-    message: "User created successfully",
-    user: result.user
-  });
 }
 
 const getMyProfile = async (req, res) => {
-  const { authUserId } = req.user;
+    const { authUserId } = req.user;
 
-  const user = await getMyProfileService(authUserId)
+    const user = await getMyProfileService(authUserId)
 
-  if (!user || !user.isActive) {
-    return res.status(404).json({
-      message: "User not found or blocked"
-    });
-  }
+    if (!user || !user.isActive) {
+        return res.status(404).json({
+            message: "User not found or blocked"
+        });
+    }
 
-  res.status(200).json(user);
+    res.status(200).json(user);
 }
 
 const getUserProfile = async (req, res) => {
-  try {
-    const profile = await getUserProfileService(
-      req.user.authUserId,
-      req.params.authUserId
-    )
+    try {
+        const profile = await getUserProfileService(
+            req.user.authUserId,
+            req.params.authUserId
+        )
 
-    res.status(200).json(profile)
-  } catch (error) {
-    res.status(403).json({ message: err.message })
-  }
+        res.status(200).json(profile)
+    } catch (error) {
+        res.status(403).json({ message: err.message })
+    }
 }
 
 const updateUser = async (req, res) => {
-  try {
-    const { authUserId } = req.user;
-    const { name, username } = req.body;
+    try {
+        const { authUserId } = req.user;
+        const { name, username } = req.body;
 
-    // ❌ no fields provided
-    if (
-      (!name || name.trim() === "") &&
-      (!username || username.trim() === "")
-    ) {
-      return res.status(400).json({
-        message: "At least one field (name or username) is required"
-      });
+        // ❌ no fields provided
+        if (
+            (!name || name.trim() === "") &&
+            (!username || username.trim() === "")
+        ) {
+            return res.status(400).json({
+                message: "At least one field (name or username) is required"
+            });
+        }
+
+        const user = await updateUserService({
+            authUserId,
+            name,
+            username
+        });
+
+        res.status(200).json({
+            message: "Profile updated successfully",
+            user
+        });
+    } catch (err) {
+        res.status(400).json({
+            message: err.message
+        });
     }
-
-    const user = await updateUserService({
-      authUserId,
-      name,
-      username
-    });
-
-    res.status(200).json({
-      message: "Profile updated successfully",
-      user
-    });
-  } catch (err) {
-    res.status(400).json({
-      message: err.message
-    });
-  }
 };
 
 const blockUser = async (req, res) => {
-  try {
-    const { authUserId } = req.user;
-    await blockUserService(authUserId, req.params.blockedAuthUserId);
+    try {
+        const { authUserId } = req.user;
+        await blockUserService(authUserId, req.params.blockedAuthUserId);
 
-    res.status(200).json({ message: "User blocked successfully" })
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+        res.status(200).json({ message: "User blocked successfully" })
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 }
 
 const unblockUser = async (req, res) => {
-  try {
-    const { authUserId } = req.user;
-    await unblockService(authUserId, req.params.blockedAuthUserId)
+    try {
+        const { authUserId } = req.user;
+        await unblockService(authUserId, req.params.blockedAuthUserId)
 
-    res.status(200).json({ message: "User unblocked successfully" });
-  } catch (error) {
-    res.status(400).json({ message: err.message });
-  }
+        res.status(200).json({ message: "User unblocked successfully" });
+    } catch (error) {
+        res.status(400).json({ message: err.message });
+    }
 }
 
 const blockList = async (req, res) => {
-  const { authUserId } = req.user;
-  const list = await blockListService(authUserId)
-  res.status(200).json(list)
+    const { authUserId } = req.user;
+    const list = await blockListService(authUserId)
+    res.status(200).json(list)
 }
 
 const checkBlock = async (req, res) => {
-  const { receiverAuthUserId } = req.query;
+    const { receiverAuthUserId } = req.query;
 
-  if (!receiverAuthUserId) {
-    return res
-      .status(400)
-      .json({ message: "receiverAuthUserId required" });
-  }
+    if (!receiverAuthUserId) {
+        return res
+            .status(400)
+            .json({ message: "receiverAuthUserId required" });
+    }
 
-  const blocked = await checkBlockService(req.user.authUserId, receiverAuthUserId)
+    const blocked = await checkBlockService(req.user.authUserId, receiverAuthUserId)
 
-  res.status(200).json(blocked)
+    res.status(200).json(blocked)
 }
 
 const searchUser = async (req, res) => {
-  const { q, page = 1, limit = 20 } = req.query;
+    const { q, page = 1, limit = 20 } = req.query;
 
-  if (!q || q.trim() === "") {
-    return res.status(400).json({
-      message: "Search query is required"
-    })
-  }
+    if (!q || q.trim() === "") {
+        return res.status(400).json({
+            message: "Search query is required"
+        })
+    }
 
-  const users = await searchUserService(
-    req.user.authUserId,
-    q.trim(),
-    Number(page),
-    Number((limit))
-  )
+    const users = await searchUserService(
+        req.user.authUserId,
+        q.trim(),
+        Number(page),
+        Number((limit))
+    )
 
-  res.status(200).json(users);
+    res.status(200).json(users);
 }
 
+const getUsersByIds = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "User ids required" });
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        authUserId: { in: ids }
+      },
+      select: {
+        authUserId: true,
+        name: true,
+        username: true,
+        isActive: true
+      }
+    });
+
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.authUserId] = u;
+    });
+
+    res.json(userMap);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch users" });
+  }
+};
+
 module.exports = {
-  createUser,
-  getMyProfile,
-  getUserProfile,
-  updateUser,
-  blockUser,
-  blockList,
-  unblockUser,
-  checkBlock,
-  searchUser
+    createUser,
+    getMyProfile,
+    getUserProfile,
+    updateUser,
+    blockUser,
+    blockList,
+    unblockUser,
+    checkBlock,
+    searchUser,
+    getUsersByIds
 }

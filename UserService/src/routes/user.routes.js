@@ -11,7 +11,8 @@ const {
     blockList,
     unblockUser,
     checkBlock,
-    searchUser
+    searchUser,
+    getUsersByIds
 } = require("../controllers/user.controller")
 
 
@@ -28,6 +29,8 @@ router.get("/blocked/list", protect, blockList)
 router.get("/block/check", protect, checkBlock)
 
 router.get("/search", protect, searchUser)
+
+router.post("/batch", protect, getUsersByIds)
 
 
 module.exports = router
