@@ -8,8 +8,12 @@ module.exports = (socket) => {
 
     presence.userOnline(userId, socket.id)
 
+    socket.on("join-chat", (chatId) => {
+        socket.join(chatId);
+    });
+
     //send message
-    socket.on("send-message", async ({ chatId, content, receiverId }) => {
+    socket.on("send-message", async({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
             senderId: userId,
@@ -24,7 +28,7 @@ module.exports = (socket) => {
     })
 
     //mark seen message 
-    socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
+    socket.on("mark-seen", async({ chatId, lastSeenMessageId }) => {
         await markSeenService({
             chatId,
             userId: userId,
