@@ -29,4 +29,3 @@ router.get("/:chatId", protect, getMessage)
 
 
 module.exports = router
-module.exports = router
