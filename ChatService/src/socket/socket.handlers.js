@@ -8,12 +8,21 @@ module.exports = (socket) => {
 
     presence.userOnline(userId, socket.id)
 
+    //Notify all users
+    redisPublisher.publish(
+        "chat-events",
+        JSON.stringify({
+            type: "USER_ONLINE",
+            userId,
+        })
+    )
+
     socket.on("join-chat", (chatId) => {
         socket.join(chatId);
     });
 
     //send message
-    socket.on("send-message", async({ chatId, content, receiverId }) => {
+    socket.on("send-message", async ({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
             senderId: userId,
@@ -28,7 +37,7 @@ module.exports = (socket) => {
     })
 
     //mark seen message 
-    socket.on("mark-seen", async({ chatId, lastSeenMessageId }) => {
+    socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
         await markSeenService({
             chatId,
             userId: userId,
@@ -43,7 +52,15 @@ module.exports = (socket) => {
         }))
     })
 
-    socket.on("disconnect", () =>
-        presence.userOffline(userId, socket.id)
-    )
+    socket.on("disconnect", async () => {
+        await presence.userOffline(userId, socket.id)
+
+        await redisPublisher.publish(
+            "chat-events",
+            JSON.stringify({
+                type: "USER_OFFLINE",
+                userId,
+            })
+        )
+    })
 }

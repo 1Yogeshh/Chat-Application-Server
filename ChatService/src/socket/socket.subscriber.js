@@ -37,5 +37,19 @@ module.exports = async(io) => {
             })
         }
 
+        //User Online
+        if(event.type === "USER_ONLINE"){
+            io.emit("user-online",{
+                userId: event.userId,
+            })
+        }
+
+        //User Offline
+        if(event.type === "USER_OFFLINE"){
+            io.emit("user-ofline",{
+                userId: event.userId,
+            })
+        }
+
     });
 }
