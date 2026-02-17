@@ -3,19 +3,29 @@ const { redisPublisher } = require("../config/redis")
 const presence = require("../redis/presence.redis")
 const { sendMessageService, markSeenService } = require("../services/chatService")
 
-module.exports = (socket) => {
+module.exports = async (socket) => {
     const userId = socket.user.userId
 
-    presence.userOnline(userId, socket.id)
+    await presence.userOnline(userId, socket.id);
 
-    //Notify all users
-    redisPublisher.publish(
+    await redisPublisher.publish(
         "chat-events",
         JSON.stringify({
             type: "USER_ONLINE",
             userId,
         })
-    )
+    );
+
+    // 🔥 INITIAL SYNC
+    // socket.on("get-online-users", async () => {
+    //     const users = await presence.getOnlineUsers();
+    //     console.log("❤️❤️online: ", users)
+    //     socket.emit("online-users-list", users);
+    // });
+
+    // after userOnline
+    const users = await presence.getOnlineUsers();
+    socket.emit("online-users-list", users);
 
     socket.on("join-chat", (chatId) => {
         socket.join(chatId);
@@ -53,14 +63,18 @@ module.exports = (socket) => {
     })
 
     socket.on("disconnect", async () => {
-        await presence.userOffline(userId, socket.id)
+        await presence.userOffline(userId, socket.id);
 
-        await redisPublisher.publish(
-            "chat-events",
-            JSON.stringify({
-                type: "USER_OFFLINE",
-                userId,
-            })
-        )
-    })
+        const stillOnline = await presence.isUserOnline(userId);
+
+        if (!stillOnline) {
+            await redisPublisher.publish(
+                "chat-events",
+                JSON.stringify({
+                    type: "USER_OFFLINE",
+                    userId,
+                })
+            );
+        }
+    });
 }
