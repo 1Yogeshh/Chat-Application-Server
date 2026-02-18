@@ -3,7 +3,7 @@ const { redisPublisher } = require("../config/redis")
 const presence = require("../redis/presence.redis")
 const { sendMessageService, markSeenService } = require("../services/chatService")
 
-module.exports = async (socket) => {
+module.exports = async(socket) => {
     const userId = socket.user.userId
 
     await presence.userOnline(userId, socket.id);
@@ -16,13 +16,6 @@ module.exports = async (socket) => {
         })
     );
 
-    // 🔥 INITIAL SYNC
-    // socket.on("get-online-users", async () => {
-    //     const users = await presence.getOnlineUsers();
-    //     console.log("❤️❤️online: ", users)
-    //     socket.emit("online-users-list", users);
-    // });
-
     // after userOnline
     const users = await presence.getOnlineUsers();
     socket.emit("online-users-list", users);
@@ -32,7 +25,7 @@ module.exports = async (socket) => {
     });
 
     //send message
-    socket.on("send-message", async ({ chatId, content, receiverId }) => {
+    socket.on("send-message", async({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
             senderId: userId,
@@ -47,7 +40,7 @@ module.exports = async (socket) => {
     })
 
     //mark seen message 
-    socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
+    socket.on("mark-seen", async({ chatId, lastSeenMessageId }) => {
         await markSeenService({
             chatId,
             userId: userId,
@@ -62,17 +55,32 @@ module.exports = async (socket) => {
         }))
     })
 
-    socket.on("disconnect", async () => {
+    socket.on("disconnect", async(reason) => {
+        console.log("❌ DISCONNECTED:", userId, "Reason:", reason);
+
         await presence.userOffline(userId, socket.id);
 
         const stillOnline = await presence.isUserOnline(userId);
 
         if (!stillOnline) {
+            console.log("🔴 USER FULLY OFFLINE:", userId);
+
             await redisPublisher.publish(
                 "chat-events",
                 JSON.stringify({
                     type: "USER_OFFLINE",
                     userId,
+                })
+            );
+
+            // 🔥 ALSO BROADCAST UPDATED LIST
+            const updatedUsers = await presence.getOnlineUsers();
+
+            await redisPublisher.publish(
+                "chat-events",
+                JSON.stringify({
+                    type: "ONLINE_LIST_UPDATE",
+                    users: updatedUsers,
                 })
             );
         }

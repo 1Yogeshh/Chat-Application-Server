@@ -38,17 +38,34 @@ module.exports = async(io) => {
         }
 
         //User Online
-        if (event.type === "USER_ONLINE") {
-            io.emit("user-online", {
-                userId: event.userId,
-            })
+        // if (event.type === "USER_ONLINE") {
+        //     io.emit("user-online", {
+        //         userId: event.userId,
+        //     })
+
+        //     const users = await presence.getOnlineUsers();
+        //     io.emit("online-users-list", users);
+        // }
+
+        // //User Offline
+        // if (event.type === "USER_OFFLINE") {
+        //     io.emit("user-offline", {
+        //         userId: event.userId,
+        //     })
+
+        //     const users = await presence.getOnlineUsers();
+        //     io.emit("online-users-list", users);
+        // }
+
+        if (event.type === "USER_ONLINE" || event.type === "USER_OFFLINE") {
+            const users = await presence.getOnlineUsers();
+            io.emit("online-users-list", users);
         }
 
-        //User Offline
-        if (event.type === "USER_OFFLINE") {
-            io.emit("user-offline", {
-                userId: event.userId,
-            })
+
+        // 🔥 FORCE FULL LIST UPDATE
+        if (event.type === "ONLINE_LIST_UPDATE") {
+            io.emit("online-users-list", event.users);
         }
 
     });

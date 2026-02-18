@@ -86,7 +86,7 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
 
         prisma.chat.update({
             where: { id: chatId },
-            data: {} // updatedAt auto update ho jayega
+            data: {} 
         })
 
     ])
