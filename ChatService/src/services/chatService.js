@@ -47,29 +47,53 @@ const getUserChatService = async (userId) => {
             participants: true,
             message: {
                 take: 1,
-                orderBy: { createdAt: "desc" } // last message
+                orderBy: { createdAt: "desc" }
             }
         },
         orderBy: {
-            createdAt: "desc"
+            updatedAt: "desc"
         }
     })
 }
 
 
 //send message service
+// const sendMessageService = async ({ chatId, senderId, content }) => {
+//     const message = await prisma.message.create({
+//         data: {
+//             chatId,
+//             senderId,
+//             content,
+//             status: "SENT"
+//         }
+//     })
+
+//     return message
+// }
+
 const sendMessageService = async ({ chatId, senderId, content }) => {
-    const message = await prisma.message.create({
-        data: {
-            chatId,
-            senderId,
-            content,
-            status: "SENT"
-        }
-    })
+
+    const [message] = await prisma.$transaction([
+
+        prisma.message.create({
+            data: {
+                chatId,
+                senderId,
+                content,
+                status: "SENT"
+            }
+        }),
+
+        prisma.chat.update({
+            where: { id: chatId },
+            data: {} // updatedAt auto update ho jayega
+        })
+
+    ])
 
     return message
 }
+
 
 //get message service
 const getMessageService = async ({ chatId, userId }) => {
