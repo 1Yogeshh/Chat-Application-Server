@@ -183,7 +183,8 @@ const getUsersByIds = async (req, res) => {
         authUserId: true,
         name: true,
         username: true,
-        isActive: true
+        isActive: true,
+        avtar: true
       }
     });
 
