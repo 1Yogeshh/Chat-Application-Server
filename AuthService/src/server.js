@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const prisma = require("./prisma")
-const authRoutes = require("./routes/auth.routes.js")
+const authRoutes = require("./routes/auth.routes")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("./config/redis")
