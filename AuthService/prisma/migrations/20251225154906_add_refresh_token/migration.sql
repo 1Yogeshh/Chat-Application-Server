@@ -1,4 +1,4 @@
--- CreateTable
+c-- CreateTable
 CREATE TABLE "public"."RefreshToken" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
