@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const prisma = require("./prisma")
 const authRoutes = require("./routes/auth.routes")
@@ -6,10 +7,10 @@ const cors = require("cors");
 require("./config/redis")
 
 const app = express()
-const port = 5000
+const port = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", process.env.CLIENT_URL],
     credentials: true
 }));
 
@@ -22,9 +23,9 @@ app.listen(port, () => {
 
 app.use("/", authRoutes);
 
-app.get("/db-check", async(req, res) => {
+app.get("/db-check", async (req, res) => {
     try {
-        await prisma.$queryRaw `SELECT 1`;
+        await prisma.$queryRaw`SELECT 1`;
         console.log("hello world!")
         res.json({ status: "SUCCESS", message: "DB connected ✅" });
     } catch (err) {
