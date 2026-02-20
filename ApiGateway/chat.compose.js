@@ -6,13 +6,16 @@ const USER_SERVICE = process.env.USER_SERVICE;
 const getComposedChats = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    console.log("AUTH HEADER:", req.headers.authorization);
+    // console.log("AUTH HEADER:", req.headers.authorization);
 
     // 1️⃣ Chat service se chats
     const chatRes = await axios.get(
       `${CHAT_SERVICE}/chats`,
       { headers: { Authorization: authHeader } }
     );
+
+    // console.log("CHAT_SERVICE:", CHAT_SERVICE);
+    // console.log("USER_SERVICE:", USER_SERVICE);
 
     const chats = chatRes.data.chats;
 
@@ -61,7 +64,12 @@ const getComposedChats = async (req, res) => {
 
     res.json(finalChats);
   } catch (err) {
-    console.error("Gateway chat error:", err.message);
+    console.error("Gateway chat FULL ERROR:", {
+      message: err.message,
+      status: err.response?.status,
+      data: err.response?.data
+    });
+
     res.status(500).json({ message: "Failed to load chats" });
   }
 };
