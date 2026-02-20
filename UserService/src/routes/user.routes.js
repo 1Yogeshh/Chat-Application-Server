@@ -32,5 +32,7 @@ router.get("/search", protect, searchUser)
 
 router.post("/batch", protect, getUsersByIds)
 
+router.get("/health", console.log("hello world"))
+
 
 module.exports = router
