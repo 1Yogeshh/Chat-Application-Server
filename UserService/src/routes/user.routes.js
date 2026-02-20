@@ -32,7 +32,12 @@ router.get("/search", protect, searchUser)
 
 router.post("/batch", protect, getUsersByIds)
 
-router.get("/health", console.log("hello world"))
-
+router.get("/health", (req, res) => {
+    console.log("hello world")
+    res.status(200).json({
+        success: true,
+        message: "Server is healthy 🚀"
+    })
+})
 
 module.exports = router
