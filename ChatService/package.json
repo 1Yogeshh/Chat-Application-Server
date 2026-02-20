@@ -1,10 +1,8 @@
 {
     "name": "chatservice",
     "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node src/server.js",
         "dev": "nodemon src/server.js"
     },
     "keywords": [],
@@ -18,9 +16,7 @@
         "jsonwebtoken": "^9.0.3",
         "nodemon": "^3.1.11",
         "redis": "^5.10.0",
-        "socket.io": "^4.8.3"
-    },
-    "devDependencies": {
+        "socket.io": "^4.8.3",
         "prisma": "^6.16.1"
     }
 }

@@ -8,7 +8,7 @@ const http = require("http");
 const initSocket = require("./socket");
 
 const app = express();
-const port = 5002;
+const port = process.env.PORT || 5002;
 
 // middleware
 app.use(express.json());
