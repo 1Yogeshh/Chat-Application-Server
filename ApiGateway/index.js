@@ -9,7 +9,7 @@ const app = express();
 // app.use(express.json());
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: [process.env.CLIENT_URL, "http://localhost:5173"],
     credentials: true
 }));
 
@@ -25,7 +25,7 @@ app.get("/api/chats", protect, getComposedChats);
 app.use(
     "/api/auth",
     createProxyMiddleware({
-        target: process.env.AUTH_SERVICE, // http://localhost:5000
+        target: process.env.AUTH_SERVICE,
         changeOrigin: true,
         pathRewrite: {
             "^/api/auth": ""
@@ -37,7 +37,7 @@ app.use(
 app.use(
     "/api/users",
     createProxyMiddleware({
-        target: process.env.USER_SERVICE, // http://localhost:5001
+        target: process.env.USER_SERVICE,
         changeOrigin: true,
         pathRewrite: {
             "^/api/users": ""
@@ -49,7 +49,7 @@ app.use(
 app.use(
     "/api/chat",
     createProxyMiddleware({
-        target: process.env.CHAT_SERVICE, // http://localhost:5002
+        target: process.env.CHAT_SERVICE,
         changeOrigin: true,
         pathRewrite: {
             "^/api/chat": ""
