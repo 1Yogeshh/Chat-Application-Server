@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require('express');
 const prisma = require("./prisma")
 const cookieParser = require("cookie-parser");
@@ -5,9 +6,9 @@ const userRoutes = require("./routes/user.routes")
 const cors = require("cors");
 
 const app = express()
-const port = 5001
+const port = process.env.PORT || 5001;
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", process.env.CLIENT_URL],
     credentials: true
 }));
 
