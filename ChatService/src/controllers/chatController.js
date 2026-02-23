@@ -25,14 +25,28 @@ const sendMessage = async (req, res) => {
 }
 
 //controller of get message
+// const getMessage = async (req, res) => {
+//     const msg = await getMessageService({
+//         userId: req.user.authUserId,
+//         chatId: req.params.chatId
+//     })
+
+//     res.json(msg)
+// }
+
 const getMessage = async (req, res) => {
+
+    const { cursor, limit } = req.query;
+
     const msg = await getMessageService({
         userId: req.user.authUserId,
-        chatId: req.params.chatId
-    })
+        chatId: req.params.chatId,
+        cursor: cursor || undefined,   // ❌ NO Number()
+        limit: limit ? Number(limit) : 20
+    });
 
-    res.json(msg)
-}
+    res.json(msg);
+};
 
 //get user chat
 const getUserChat = async (req, res) => {

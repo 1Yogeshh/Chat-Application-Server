@@ -86,7 +86,7 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
 
         prisma.chat.update({
             where: { id: chatId },
-            data: {} 
+            data: {}
         })
 
     ])
@@ -96,9 +96,66 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
 
 
 //get message service
-const getMessageService = async ({ chatId, userId }) => {
+// const getMessageService = async ({ chatId, userId }) => {
 
-    //Validate user belongs to chat
+//     //Validate user belongs to chat
+//     const participant = await prisma.chatParticipant.findUnique({
+//         where: {
+//             chatId_userId: {
+//                 chatId,
+//                 userId
+//             }
+//         }
+//     });
+
+//     //if not belongs to chat
+//     if (!participant) {
+//         throw new Error("Access denied: Not a participant of this chat");
+//     }
+
+//     const message = await prisma.message.findMany({
+//         where: { chatId },
+//         orderBy: { createdAt: "asc" }
+//     })
+
+//     if (message.length === 0) {
+//         return []
+//     }
+
+//     const lastMessageId = message[message.length - 1].id;
+
+//     //update last message read id
+//     await prisma.chatParticipant.update({
+//         where: {
+//             chatId_userId: {
+//                 chatId,
+//                 userId
+//             }
+//         },
+//         data: {
+//             lastReadMessageId: lastMessageId
+//         }
+//     })
+
+//     //update message to seen
+//     await prisma.message.updateMany({
+//         where: {
+//             chatId,
+//             senderId: { not: userId },
+//             status: { not: "SEEN" }
+//         },
+//         data: {
+//             status: "SEEN"
+//         }
+//     })
+
+//     return message
+// }
+
+// get message service (paginated)
+const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
+
+    // 1️⃣ Validate user belongs to chat
     const participant = await prisma.chatParticipant.findUnique({
         where: {
             chatId_userId: {
@@ -108,49 +165,43 @@ const getMessageService = async ({ chatId, userId }) => {
         }
     });
 
-    //if not belongs to chat
     if (!participant) {
         throw new Error("Access denied: Not a participant of this chat");
     }
 
-    const message = await prisma.message.findMany({
+    // 2️⃣ Fetch messages using cursor pagination
+    const messages = await prisma.message.findMany({
         where: { chatId },
-        orderBy: { createdAt: "asc" }
-    })
-
-    if (message.length === 0) {
-        return []
-    }
-
-    const lastMessageId = message[message.length - 1].id;
-
-    //update last message read id
-    await prisma.chatParticipant.update({
-        where: {
-            chatId_userId: {
-                chatId,
-                userId
-            }
-        },
-        data: {
-            lastReadMessageId: lastMessageId
+        take: limit,
+        ...(cursor && {
+            cursor: { id: cursor },
+            skip: 1
+        }),
+        orderBy: {
+            createdAt: "desc"
         }
-    })
+    });
 
-    //update message to seen
-    await prisma.message.updateMany({
-        where: {
-            chatId,
-            senderId: { not: userId },
-            status: { not: "SEEN" }
-        },
-        data: {
-            status: "SEEN"
-        }
-    })
+    // Reverse so frontend gets oldest → newest
+    const orderedMessages = messages.reverse();
 
-    return message
-}
+    console.log("Incoming cursor:", cursor);
+
+    console.log("Returned IDs:",
+        orderedMessages.map(m => m.id)
+    );
+
+    console.log("NextCursor:", orderedMessages[0]?.id);
+    console.log("HasMore:", orderedMessages.length === limit);
+
+    return {
+        messages: orderedMessages,
+        nextCursor: orderedMessages.length > 0
+            ? orderedMessages[0].id
+            : null,
+        hasMore: orderedMessages.length === limit
+    };
+};
 
 //seen message service
 const markSeenService = async ({ chatId, userId, lastSeenMessageId }) => {
