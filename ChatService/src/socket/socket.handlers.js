@@ -3,7 +3,7 @@ const { redisPublisher } = require("../config/redis")
 const presence = require("../redis/presence.redis")
 const { sendMessageService, markSeenService } = require("../services/chatService")
 
-module.exports = async (socket) => {
+module.exports = async(socket) => {
     const userId = socket.user.userId
 
     await presence.userOnline(userId, socket.id);
@@ -25,27 +25,23 @@ module.exports = async (socket) => {
     });
 
     //send message
-    socket.on("send-message", async ({ chatId, content, receiverId }) => {
+    socket.on("send-message", async({ chatId, content, receiverId }) => {
         const msg = await sendMessageService({
             chatId,
             senderId: userId,
             content
         })
-
-        const messageWithSender = {
-            ...msg,
-            sender: socket.user
-        };
+        
 
         await redisPublisher.publish("chat-events", JSON.stringify({
             type: "NEW_MESSAGE",
             receiverId,
-            message: messageWithSender
+            message: msg
         }))
     })
 
     //mark seen message 
-    socket.on("mark-seen", async ({ chatId, lastSeenMessageId }) => {
+    socket.on("mark-seen", async({ chatId, lastSeenMessageId }) => {
         await markSeenService({
             chatId,
             userId: userId,
@@ -60,7 +56,7 @@ module.exports = async (socket) => {
         }))
     })
 
-    socket.on("disconnect", async (reason) => {
+    socket.on("disconnect", async(reason) => {
         console.log("❌ DISCONNECTED:", userId, "Reason:", reason);
 
         await presence.userOffline(userId, socket.id);
