@@ -185,14 +185,6 @@ const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
     // Reverse so frontend gets oldest → newest
     const orderedMessages = messages.reverse();
 
-    console.log("Incoming cursor:", cursor);
-
-    console.log("Returned IDs:",
-        orderedMessages.map(m => m.id)
-    );
-
-    console.log("NextCursor:", orderedMessages[0]?.id);
-    console.log("HasMore:", orderedMessages.length === limit);
 
     return {
         messages: orderedMessages,
