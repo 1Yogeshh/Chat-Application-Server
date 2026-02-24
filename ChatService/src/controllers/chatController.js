@@ -24,6 +24,7 @@ const sendMessage = async (req, res) => {
     res.json(msg)
 }
 
+//controller of get message
 const getMessage = async (req, res) => {
 
     const { cursor, limit } = req.query;

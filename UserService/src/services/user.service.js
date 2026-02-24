@@ -121,7 +121,6 @@ const updateUserService = async({ authUserId, name, username }) => {
         data.username = cleanUsername;
     }
 
-    // ❌ nothing to update
     if (Object.keys(data).length === 0) {
         throw new Error("Nothing to update");
     }
