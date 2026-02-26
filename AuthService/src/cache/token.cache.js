@@ -13,7 +13,12 @@ const deleteRefreshTokenFromCache = (tokenHash) => {
     return redis.del(`refresh_token:${tokenHash}`)
 }
 
+const getRefreshToken = (tokenHash) => {
+    return redis.get(`refresh_token:${tokenHash}`)
+}
+
 module.exports = {
     storeRefreshToken,
-    deleteRefreshTokenFromCache
+    deleteRefreshTokenFromCache,
+    getRefreshToken
 }

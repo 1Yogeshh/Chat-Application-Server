@@ -30,10 +30,26 @@ const deleteRefreshToken = (tokenHash) => {
     })
 }
 
+const findValidRefreshToken = (userId, tokenHash) => {
+    return prisma.refreshToken.findFirst({
+        where: {
+            userId,
+            tokenHash,
+            expiresAt: { gt: new Date() }
+        }
+    })
+}
+
+const deleteRefreshTokenById = (id) => {
+    return prisma.refreshToken.delete({ where: { id } })
+}
+
 module.exports = {
     findUserByEmail,
     createUser,
     getAllUsers,
     createRefreshToken,
-    deleteRefreshToken
+    deleteRefreshToken,
+    findValidRefreshToken,
+    deleteRefreshTokenById
 }
