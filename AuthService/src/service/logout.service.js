@@ -1,9 +1,12 @@
-const prisma = require("../prisma")
-const redis = require("../config/redis")
 const hashToken = require("../utils/hashToken")
+const authRepository = require("../repositories/auth.repository")
+const tokenCache = require("../cache/token.cache")
 
-module.exports = async (refreshToken)=>{
+module.exports = async (refreshToken) => {
+    if (!refreshToken) {
+        throw new Error("Refresh token required")
+    }
     const tokenHash = hashToken(refreshToken)
-    await prisma.refreshToken.deleteMany({where:{tokenHash}})
-    await redis.del(`refresh_token:${tokenHash}`)
+    await authRepository.deleteRefreshToken(tokenHash)
+    await tokenCache.deleteRefreshTokenFromCache(tokenHash)
 }

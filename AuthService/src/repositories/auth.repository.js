@@ -24,9 +24,16 @@ const createRefreshToken = (data) => {
     return prisma.refreshToken.create({ data })
 }
 
+const deleteRefreshToken = (tokenHash) => {
+    return prisma.refreshToken.deleteMany({
+        where: { tokenHash }
+    })
+}
+
 module.exports = {
     findUserByEmail,
     createUser,
     getAllUsers,
-    createRefreshToken
+    createRefreshToken,
+    deleteRefreshToken
 }

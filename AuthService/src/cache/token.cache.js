@@ -9,4 +9,11 @@ const storeRefreshToken = (tokenHash, userId) => {
     )
 }
 
-module.exports = { storeRefreshToken }
+const deleteRefreshTokenFromCache = (tokenHash) => {
+    return redis.del(`refresh_token:${tokenHash}`)
+}
+
+module.exports = {
+    storeRefreshToken,
+    deleteRefreshTokenFromCache
+}
