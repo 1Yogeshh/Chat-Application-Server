@@ -6,56 +6,48 @@ const {
     searchUserService,
     getUserByIdsService
 } = require("../services/user.service")
-const prisma = require("../prisma")
 
 const createUser = async (req, res) => {
-    const { authUserId, email } = req.user;
-    const { name, username } = req.body
+    try {
+        const { authUserId, email } = req.user
 
-    if (!username || username.trim() === "") {
-        return res.status(400).json({ message: "Username is required" });
-    }
-
-    const cleanUsername = username.trim().toLowerCase();
-
-    if (!name || name.trim() === "") {
-        return res.status(400).json({
-            message: "Name is required"
+        const result = await createUserService({
+            authUserId,
+            email,
+            ...req.body
         })
+
+        if (result.alreadyExists) {
+            return res.status(409).json({
+                success: false,
+                message: "User already exists",
+                data: result.user
+            })
+        }
+
+        res.status(201).json({
+            success: true,
+            message: "User created successfully",
+            data: result.user
+        })
+
+    } catch (err) {
+        next(err)
     }
-
-    const result = await createUserService({
-        authUserId,
-        email,
-        name,
-        username: cleanUsername
-    })
-
-    if (result.alreadyExits) {
-        return res.status(409).json({
-            message: "User already exists",
-            user: result.user
-        });
-    }
-
-    return res.status(201).json({
-        message: "User created successfully",
-        user: result.user
-    });
 }
 
 const getMyProfile = async (req, res) => {
-    const { authUserId } = req.user;
+    try {
+        const user = await getMyProfileService(req.user.authUserId)
 
-    const user = await getMyProfileService(authUserId)
+        res.status(200).json({
+            success: true,
+            data: user
+        })
 
-    if (!user || !user.isActive) {
-        return res.status(404).json({
-            message: "User not found or blocked"
-        });
+    } catch (err) {
+        next(err)
     }
-
-    res.status(200).json(user);
 }
 
 const getUserProfile = async (req, res) => {
@@ -73,23 +65,9 @@ const getUserProfile = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
-        const { authUserId } = req.user;
-        const { name, username } = req.body;
-
-        // ❌ no fields provided
-        if (
-            (!name || name.trim() === "") &&
-            (!username || username.trim() === "")
-        ) {
-            return res.status(400).json({
-                message: "At least one field (name or username) is required"
-            });
-        }
-
         const user = await updateUserService({
-            authUserId,
-            name,
-            username
+            authUserId: req.user.authUserId,
+            ...req.body
         });
 
         res.status(200).json({
@@ -105,12 +83,6 @@ const updateUser = async (req, res) => {
 
 const searchUser = async (req, res) => {
     const { q, page = 1, limit = 20 } = req.query;
-
-    if (!q || q.trim() === "") {
-        return res.status(400).json({
-            message: "Search query is required"
-        })
-    }
 
     const users = await searchUserService(
         req.user.authUserId,
