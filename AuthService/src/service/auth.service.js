@@ -1,31 +1,17 @@
 const authRepository = require("../repositories/auth.repository")
 const { hashPassword, comparePassword } = require("../utils/password.util")
-const prisma = require("../prisma")
-const bcrypt = require("bcrypt")
 const { generateAccessToken, generateRefreshToken } = require("../config/generateToken")
 const hashToken = require("../utils/hashToken")
-const redis = require("../config/redis")
+const TokenCache = require("../cache/token.cache")
 
 const register = async (email, password) => {
-    // const existUser = await prisma.authUser.findUnique({
-    //     where:{email}
-    // })
-
     const existUser = await authRepository.findUserByEmail(email)
 
     if (existUser) {
         throw new Error("user already registered")
     }
 
-    // const hashPassword = await bcrypt.hash(password, 10)
     const hashed = await hashPassword(password)
-
-    // const user = await prisma.authUser.create({
-    //     data: {
-    //         email,
-    //         password: hashPassword,
-    //     }
-    // })
 
     const user = await authRepository.createUser({
         email,
@@ -37,29 +23,16 @@ const register = async (email, password) => {
 }
 
 const getAllUsers = async () => {
-    // return prisma.authUser.findMany({
-    //     select: {
-    //         id: true,
-    //         email: true,
-    //         createdAt: true
-    //     }
-    // })
     return authRepository.getAllUsers();
 }
 
 const login = async (email, password) => {
-
-    // const user = await prisma.authUser.findUnique({
-    //     where: { email }
-    // })
-
     const user = await authRepository.findUserByEmail(email)
 
     if (!user) {
         throw new Error("Invalid Credentials")
     }
 
-    // const isMatch = await bcrypt.compare(password, user.password)
     const isMatch = await comparePassword(password, user.password)
 
     if (!isMatch) {
@@ -71,26 +44,13 @@ const login = async (email, password) => {
 
     const refreshTokenHash = hashToken(refreshToken)
 
-    // await prisma.refreshToken.create({
-    //     data: {
-    //         userId: user.id,
-    //         tokenHash: refreshTokenHash,
-    //         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    //     }
-    // })
-
     await authRepository.createRefreshToken({
         userId: user.id,
         tokenHash: refreshTokenHash,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
 
-    await redis.set(
-        `refresh_token:${refreshTokenHash}`,
-        user.id,
-        "EX",
-        7 * 24 * 60 * 60 // seconds
-    )
+    await TokenCache.storeRefreshToken(refreshTokenHash, user.id)
 
     const { password: _, ...safeUser } = user;
 
