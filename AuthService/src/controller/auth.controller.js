@@ -55,17 +55,10 @@ const login = async (req, res) => {
 
         const { safeUser, accessToken, refreshToken } = await authService.login(email, password)
 
-        // res.cookie("refreshToken", refreshToken,{
-        //     httpOnly: true,
-        //     secure: false,
-        //     sameSite: "strict",
-        //     maxAge: 7 * 24 * 60 * 60 * 1000,
-        // })
-
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: isProduction,                 // 🔥 true in production
-            sameSite: isProduction ? "None" : "Lax", // 🔥 NONE for cross-site
+            secure: isProduction,                 
+            sameSite: isProduction ? "None" : "Lax", 
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
