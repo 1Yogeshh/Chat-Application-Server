@@ -1,18 +1,21 @@
-const prisma = require("../prisma")
+const userRepo = require("../repository/user.repository")
+const { validateCreateUser, validateUpdateUser } = require("../validators/user.validator")
+const { buildCreateUserData, buildUpdateData } = require("../mapper/user.mapper")
+const { buildPagination } = require("../pagination/user.pagination")
+const { buildSearchQuery } = require("../queryBuilder/user.queryBuilder")
 
-const createUserService = async({ authUserId, email, name, username }) => {
+const createUserService = async (payload) => {
+    validateCreateUser(payload)
 
-    const usernameTaken = await prisma.user.findUnique({
-        where: { username }
-    });
+    const { authUserId, username } = payload
+
+    const usernameTaken = await userRepo.findByUsername(username)
 
     if (usernameTaken) {
         throw new Error("Username already taken");
     }
 
-    const existUser = await prisma.user.findUnique({
-        where: { authUserId }
-    })
+    const existUser = await userRepo.findByAuthId(authUserId)
 
     if (existUser) {
         return {
@@ -21,21 +24,9 @@ const createUserService = async({ authUserId, email, name, username }) => {
         }
     }
 
-    // 🎯 Dynamic Avatar Generate
-    const avatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${username}`;
+    const data = buildCreateUserData(payload)
 
-    //create new user
-    const user = await prisma.user.create({
-        data: {
-            authUserId,
-            email,
-            name: name.trim(),
-            username,
-            role: "USER",
-            avtar: avatarUrl,
-            isActive: true
-        }
-    })
+    const user = await userRepo.createUser(data)
 
     return {
         alreadyExits: false,
@@ -44,75 +35,37 @@ const createUserService = async({ authUserId, email, name, username }) => {
 }
 
 //get my profile
-const getMyProfileService = async(authUserId) => {
-    return prisma.user.findUnique({
-        where: { authUserId }
-    })
+const getMyProfileService = async (authUserId) => {
+    return userRepo.findByAuthId(authUserId)
 }
 
 //get another user profile
-const getUserProfileService = async(myAuthUserId, targetAuthUserId) => {
+const getUserProfileService = async (myAuthUserId, targetAuthUserId) => {
     if (myAuthUserId === targetAuthUserId) {
         throw new Error("This is your own id not user id")
     }
 
-    const targetUser = await prisma.user.findUnique({
-        where: { authUserId: targetAuthUserId },
-        select: {
-            authUserId: true,
-            name: true,
-            username: true,
-            email: true,
-            isActive: true
-        }
-    })
+    const targetUser = await userRepo.findByAuthId(targetAuthUserId)
 
     if (!targetUser || !targetUser.isActive) {
         throw new Error("User not Found")
     }
 
-    const blocked = await prisma.blockedUser.findFirst({
-        where: {
-            OR: [{
-                    blockerAuthUserId: myAuthUserId,
-                    blockedAuthUserId: targetAuthUserId
-                },
-                {
-                    blockerAuthUserId: targetAuthUserId,
-                    blockedAuthUserId: myAuthUserId
-                }
-            ]
-        }
-    })
-
-    if (blocked) {
-        throw new Error("You cannot view this profile")
-    }
-
     return targetUser;
 }
 
-const updateUserService = async({ authUserId, name, username }) => {
-    const data = {};
+const updateUserService = async (payload) => {
+    validateUpdateUser(payload)
 
-    // ✅ name update (optional)
-    if (name && name.trim() !== "") {
-        data.name = name.trim();
-    }
+    const { authUserId, username } = payload
+
 
     // ✅ username update (optional)
     if (username && username.trim() !== "") {
         const cleanUsername = username.trim().toLowerCase();
 
         // 🔥 check username uniqueness (exclude self)
-        const existingUser = await prisma.user.findFirst({
-            where: {
-                username: cleanUsername,
-                NOT: {
-                    authUserId: authUserId
-                }
-            }
-        });
+        const existingUser = await userRepo.findByUsername(cleanUsername)
 
         if (existingUser) {
             throw new Error("Username already taken");
@@ -121,214 +74,30 @@ const updateUserService = async({ authUserId, name, username }) => {
         data.username = cleanUsername;
     }
 
-    if (Object.keys(data).length === 0) {
-        throw new Error("Nothing to update");
-    }
+    const data = buildUpdateData(payload)
 
-    return prisma.user.update({
-        where: { authUserId },
-        data,
-        select: {
-            authUserId: true,
-            name: true,
-            username: true,
-            email: true,
-            isActive: true,
-            updatedAt: true
-        }
-    });
+    return userRepo.updateUser(authUserId, data)
 };
 
-//helper check user exist or not
-const userExists = async(authUserId) => {
-    const user = await prisma.user.findUnique({
-        where: {
-            authUserId
-        },
-        select: {
-            authUserId: true
-        }
-    })
-
-    return !!user
-}
-
-//block user
-const blockUserService = async(blockerAuthUserId, blockedAuthUserId) => {
-    if (blockerAuthUserId === blockedAuthUserId) {
-        throw new Error("You cannot block yourself")
-    }
-
-    const receiverExists = await userExists(blockedAuthUserId)
-    if (!receiverExists) {
-        throw new Error("User to block does not exist")
-    }
-
-    const alreadyBlock = await prisma.blockedUser.findUnique({
-        where: {
-            blockerAuthUserId_blockedAuthUserId: {
-                blockerAuthUserId,
-                blockedAuthUserId
-            }
-        }
-    })
-
-    if (alreadyBlock) {
-        throw new Error("User Already Blocked")
-    }
-
-    await prisma.blockedUser.create({
-        data: {
-            blockerAuthUserId,
-            blockedAuthUserId
-        }
-    })
-}
-
-//unblock
-const unblockService = async(blockerAuthUserId, blockedAuthUserId) => {
-    const receiverExists = await userExists(blockedAuthUserId);
-    if (!receiverExists) {
-        throw new Error("User does not exist");
-    }
-
-    await prisma.blockedUser.delete({
-        where: {
-            blockerAuthUserId_blockedAuthUserId: {
-                blockerAuthUserId,
-                blockedAuthUserId
-            }
-        }
-    })
-}
-
-//block list
-const blockListService = async(blockerAuthUserId) => {
-    // 1️⃣ blocked users ke authUserIds nikalo
-    const blockedRows = await prisma.blockedUser.findMany({
-        where: { blockerAuthUserId },
-        select: {
-            blockedAuthUserId: true
-        }
-    });
-
-    const blockedAuthUserIds = blockedRows.map(
-        row => row.blockedAuthUserId
-    );
-
-    if (blockedAuthUserIds.length === 0) {
-        return [];
-    }
-
-    // 2️⃣ User table se unka data lao
-    const blockedUsers = await prisma.user.findMany({
-        where: {
-            authUserId: { in: blockedAuthUserIds
-            }
-        },
-        select: {
-            authUserId: true,
-            name: true,
-            email: true,
-            isActive: true
-        }
-    });
-
-    return blockedUsers;
-};
-
-//check block or not
-const checkBlockService = async(senderAuthUserId, receiverAuthUserId) => {
-    const receiverExists = await userExists(receiverAuthUserId)
-    if (!receiverExists) {
-        return true; // ❗ safest default → block
-    }
-
-    const blocked = await prisma.blockedUser.findFirst({
-        where: {
-            OR: [{
-                    blockerAuthUserId: senderAuthUserId,
-                    blockedAuthUserId: receiverAuthUserId
-                },
-                {
-                    blockerAuthUserId: receiverAuthUserId,
-                    blockedAuthUserId: senderAuthUserId
-                }
-            ]
-        }
-    })
-
-    return !!blocked
-}
-
-const searchUserService = async(
+const searchUserService = async (
     myAuthUserId,
     searchText,
     page = 1,
     limit = 20
 ) => {
-    const skip = (page - 1) * limit;
+    // 🔹 Business Rule
+    if (!searchText || searchText.trim() === "") {
+        throw new Error("Search text required")
+    }
 
-    //users I blocked
-    const blockedByMe = await prisma.blockedUser.findMany({
-        where: {
-            blockerAuthUserId: myAuthUserId
-        },
-        select: {
-            blockedAuthUserId: true
-        }
+    const where = buildSearchQuery({
+        searchText,
+        myAuthUserId
     })
 
-    //users who blocked me 
-    const blockedMe = await prisma.blockedUser.findMany({
-        where: {
-            blockedAuthUserId: myAuthUserId
-        },
-        select: {
-            blockerAuthUserId: true
-        }
-    })
+    const { skip, take } = buildPagination(page, limit)
 
-    const excludes = [
-        myAuthUserId,
-        ...blockedByMe.map(u => u.blockedAuthUserId),
-        ...blockedMe.map(u => u.blockerAuthUserId)
-    ]
-
-    return prisma.user.findMany({
-        where: {
-            authUserId: { notIn: excludes },
-            OR: [{
-                    name: {
-                        contains: searchText,
-                        mode: "insensitive"
-                    }
-                },
-                {
-                    email: {
-                        contains: searchText,
-                        mode: "insensitive"
-                    }
-                },
-                {
-                    username: {
-                        contains: searchText,
-                        mode: "insensitive"
-                    }
-                }
-            ]
-        },
-        select: {
-            authUserId: true,
-            name: true,
-            email: true,
-            isActive: true,
-            avtar:true,
-            username: true
-        },
-        skip,
-        take: limit
-    })
+    return userRepo.searchUsers(where, skip, take)
 }
 
 module.exports = {
@@ -336,9 +105,5 @@ module.exports = {
     getMyProfileService,
     getUserProfileService,
     updateUserService,
-    blockUserService,
-    unblockService,
-    blockListService,
-    checkBlockService,
     searchUserService
 }
