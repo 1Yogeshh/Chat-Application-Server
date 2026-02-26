@@ -1,6 +1,6 @@
 const userRepo = require("../repository/user.repository")
-const { validateCreateUser, validateUpdateUser } = require("../validators/user.validator")
-const { buildCreateUserData, buildUpdateData } = require("../mapper/user.mapper")
+const { validateCreateUser, validateUpdateUser, validateUserIds } = require("../validators/user.validator")
+const { buildCreateUserData, buildUpdateData, mapUsersToObject } = require("../mapper/user.mapper")
 const { buildPagination } = require("../pagination/user.pagination")
 const { buildSearchQuery } = require("../queryBuilder/user.queryBuilder")
 
@@ -100,10 +100,19 @@ const searchUserService = async (
     return userRepo.searchUsers(where, skip, take)
 }
 
+const getUserByIdsService = async (ids) => {
+    validateUserIds(ids)
+
+    const users = await userRepo.findUsersByIds(ids)
+
+    return mapUsersToObject(users)
+}
+
 module.exports = {
     createUserService,
     getMyProfileService,
     getUserProfileService,
     updateUserService,
-    searchUserService
+    searchUserService,
+    getUserByIdsService
 }

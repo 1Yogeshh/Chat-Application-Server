@@ -39,10 +39,26 @@ const searchUsers = (where, skip, take) => {
     })
 }
 
+const findUsersByIds = (ids) => {
+    return prisma.user.findMany({
+        where: {
+            authUserId: { in: ids }
+        },
+        select: {
+            authUserId: true,
+            name: true,
+            username: true,
+            isActive: true,
+            avtar: true
+        }
+    })
+}
+
 module.exports = {
     findByAuthId,
     findByUsername,
     createUser,
     updateUser,
-    searchUsers
+    searchUsers,
+    findUsersByIds
 }

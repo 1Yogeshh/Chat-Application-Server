@@ -19,7 +19,15 @@ const buildUpdateData = ({ name, username }) => {
     return data
 }
 
+const mapUsersToObject = (users) => {
+    return users.reduce((acc, user) => {
+        acc[user.authUserId] = user
+        return acc
+    }, {})
+}
+
 module.exports = {
     buildCreateUserData,
-    buildUpdateData
+    buildUpdateData,
+    mapUsersToObject
 }

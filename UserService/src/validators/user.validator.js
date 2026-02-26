@@ -10,7 +10,14 @@ const validateUpdateUser = ({ name, username }) => {
     }
 }
 
+const validateUserIds = (ids) => {
+    if (!Array.isArray(ids) || ids.length === 0) {
+        throw new Error("User ids required")
+    }
+}
+
 module.exports = {
     validateCreateUser,
-    validateUpdateUser
+    validateUpdateUser,
+    validateUserIds
 }
