@@ -1,7 +1,7 @@
-const baseLogger = require("../../config/logger")
+const baseLogger = require("../config/logger")
 
-const authLogger = baseLogger.child({
+const userLogger = baseLogger.child({
     module: "USER"
 })
 
-module.exports = authLogger
+module.exports = userLogger
