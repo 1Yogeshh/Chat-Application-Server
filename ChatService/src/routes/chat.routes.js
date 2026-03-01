@@ -8,24 +8,16 @@ const {
     getMessage,
     getUserChat
 } = require("../controllers/chatController")
+const validate = require("../middleware/validate.middleware")
+const { privateChatSchema, getMessagesSchema } = require("../validators/chat.schema")
 
-router.get("/me", protect, (req, res) => {
-        res.json({
-            message: "User profile",
-            user: req.user,
-        })
-    })
-    //get all chats
 router.get("/chats", protect, getUserChat)
 
-//get of private chat and create
-router.get("/private/:otherUserId", protect, getPrivateChat)
+router.get("/private/:otherUserId", protect, validate(privateChatSchema), getPrivateChat)
 
-//send message
 router.post("/send", protect, sendMessage)
 
-//get specific chat
-router.get("/:chatId", protect, getMessage)
+router.get("/:chatId", protect, validate(getMessagesSchema), getMessage)
 
 
 module.exports = router
