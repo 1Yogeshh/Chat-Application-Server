@@ -6,7 +6,7 @@ const authLogger = require("../logger/auth.logger")
 const isProduction = process.env.NODE_ENV === "production";
 
 //register controller
-const register = async (req, res) => {
+const register = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -47,7 +47,7 @@ const getAllUsers = async (req, res) => {
 
 
 //login controller
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -83,7 +83,7 @@ const login = async (req, res) => {
     }
 }
 
-const refreshToken = async (req, res) => {
+const refreshToken = async (req, res, next) => {
     try {
         const token = req.cookies.refreshToken;
         const { newAccessToken, newRefreshToken } = await refreshTokenService(token)
