@@ -1,5 +1,3 @@
-const prisma = require("../config/prisma");
-const redis = require("../config/redis")
 const chatRepo = require("../repository/chat.repository")
 const messageRepo = require("../repository/message.repository")
 
@@ -25,6 +23,8 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
         senderId,
         content
     )
+
+    
 
     return message
 }
