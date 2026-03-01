@@ -1,6 +1,7 @@
 const authService = require("../service/auth.service")
 const refreshTokenService = require("../service/refreshToken.service")
 const logoutService = require("../service/logout.service")
+const authLogger = require("../logger/auth.logger")
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -23,9 +24,12 @@ const register = async (req, res) => {
             user,
         });
     } catch (error) {
-        res.status(400).json({
-            message: error.message,
-        });
+        authLogger.error({
+            action: "REGISTER_ERROR",
+            error: error.message
+        })
+
+        next(error)
     }
 }
 
@@ -57,8 +61,8 @@ const login = async (req, res) => {
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: isProduction,                 
-            sameSite: isProduction ? "None" : "Lax", 
+            secure: isProduction,
+            sameSite: isProduction ? "None" : "Lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -70,9 +74,12 @@ const login = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(400).json({
-            message: error.message,
-        });
+        authLogger.error({
+            action: "LOGIN_ERROR",
+            error: error.message
+        })
+
+        next(error)
     }
 }
 
@@ -91,14 +98,41 @@ const refreshToken = async (req, res) => {
         res.json({ accessToken: newAccessToken });
 
     } catch (error) {
-        res.status(401).json({ message: error.message });
+        authLogger.warn({
+            action: "REFRESH_FAILED",
+            error: error.message
+        })
+
+        next(error)
     }
 }
 
-const logout = async (req, res) => {
-    await logoutService(req.cookies.refreshToken)
-    res.clearCookie("refreshToken");
-    res.json({ message: "Logged out" });
+const logout = async (req, res, next) => {
+    try {
+
+        await logoutService(req.cookies.refreshToken)
+
+        res.clearCookie("refreshToken")
+
+        authLogger.info({
+            action: "LOGOUT",
+            userId: req.user?.authUserId
+        })
+
+        res.json({
+            success: true,
+            message: "Logged out"
+        })
+
+    } catch (error) {
+
+        authLogger.error({
+            action: "LOGOUT_ERROR",
+            error: error.message
+        })
+
+        next(error)
+    }
 }
 
 module.exports = { register, getAllUsers, login, refreshToken, logout }

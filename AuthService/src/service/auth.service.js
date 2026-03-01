@@ -3,6 +3,7 @@ const { hashPassword, comparePassword } = require("../utils/password.util")
 const { generateAccessToken, generateRefreshToken } = require("../config/generateToken")
 const hashToken = require("../utils/hashToken")
 const TokenCache = require("../cache/token.cache")
+const authLogger = require("../logger/auth.logger")
 
 const register = async (email, password) => {
     const existUser = await authRepository.findUserByEmail(email)
@@ -18,6 +19,11 @@ const register = async (email, password) => {
         password: hashed
     })
 
+    authLogger.info({
+        action: "REGISTER_SUCCESS",
+        userId: user.id
+    })
+
     delete user.password;
     return user;
 }
@@ -30,12 +36,17 @@ const login = async (email, password) => {
     const user = await authRepository.findUserByEmail(email)
 
     if (!user) {
+        authLogger.warn({ action: "LOGIN_USER_NOT_FOUND", email })
         throw new Error("Invalid Credentials")
     }
 
     const isMatch = await comparePassword(password, user.password)
 
     if (!isMatch) {
+        authLogger.warn({
+            action: "LOGIN_WRONG_PASSWORD",
+            userId: user.id
+        })
         throw new Error("Invalid Credentials")
     }
 
@@ -51,6 +62,11 @@ const login = async (email, password) => {
     })
 
     await TokenCache.storeRefreshToken(refreshTokenHash, user.id)
+
+    authLogger.info({
+        action: "LOGIN_SUCCESS",
+        userId: user.id
+    })
 
     const { password: _, ...safeUser } = user;
 
