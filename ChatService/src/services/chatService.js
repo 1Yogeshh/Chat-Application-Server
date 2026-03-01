@@ -1,88 +1,42 @@
 const prisma = require("../config/prisma");
 const redis = require("../config/redis")
+const chatRepo = require("../repository/chat.repository")
+const messageRepo = require("../repository/message.repository")
 
 //create private chat service
 const getPrivateChatService = async (me, other) => {
-    //if chat already exist
-    let chat = await prisma.chat.findFirst({
-        where: {
-            type: "PRIVATE",
-            AND: [{
-                participants: {
-                    some: { userId: me }
-                }
-            },
-            {
-                participants: {
-                    some: { userId: other }
-                }
-            }
-            ]
-        }
-    });
+    let chat = await chatRepo.findPrivateChat(me, other)
 
-    //if chat not exist then create a chat
     if (!chat) {
-        chat = await prisma.chat.create({
-            data: {
-                type: "PRIVATE",
-                participants: {
-                    create: [{ userId: me }, { userId: other }]
-                }
-            }
-        });
+        chat = await chatRepo.createPrivateChat(me, other)
     }
     return chat;
 };
 
 //get all chats
 const getUserChatService = async (userId) => {
-    return prisma.chat.findMany({
-        where: {
-            participants: {
-                some: { userId }
-            }
-        },
-        include: {
-            participants: true,
-            message: {
-                take: 1,
-                orderBy: { createdAt: "desc" }
-            }
-        },
-        orderBy: {
-            updatedAt: "desc"
-        }
-    })
+    return chatRepo.findUserChats(userId)
 }
 
 const sendMessageService = async ({ chatId, senderId, content }) => {
 
     const [message] = await prisma.$transaction([
 
-        prisma.message.create({
-            data: {
-                chatId,
-                senderId,
-                content,
-                status: "SENT"
-            }
+        messageRepo.createMessage({
+            chatId,
+            senderId,
+            content,
+            status: "SENT"
         }),
 
-        prisma.chat.update({
-            where: { id: chatId },
-            data: {}
-        })
-
+        messageRepo.updateChatTimestamp(chatId)
     ])
-
     return message
 }
 
 // get message service (paginated)
 const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
 
-    // 1️⃣ Validate user belongs to chat
     const participant = await prisma.chatParticipant.findUnique({
         where: {
             chatId_userId: {
@@ -96,22 +50,9 @@ const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
         throw new Error("Access denied: Not a participant of this chat");
     }
 
-    // 2️⃣ Fetch messages using cursor pagination
-    const messages = await prisma.message.findMany({
-        where: { chatId },
-        take: limit,
-        ...(cursor && {
-            cursor: { id: cursor },
-            skip: 1
-        }),
-        orderBy: {
-            createdAt: "desc"
-        }
-    });
+    const messages = await messageRepo.findMessages(chatId, cursor, limit)
 
-    // Reverse so frontend gets oldest → newest
     const orderedMessages = messages.reverse();
-
 
     return {
         messages: orderedMessages,
@@ -124,34 +65,15 @@ const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
 
 //seen message service
 const markSeenService = async ({ chatId, userId, lastSeenMessageId }) => {
-    await prisma.$transaction([
-        //update last message read id
-        prisma.chatParticipant.update({
-            where: {
-                chatId_userId: {
-                    chatId,
-                    userId
-                }
-            },
-            data: {
-                lastReadMessageId: lastSeenMessageId
-            }
-        }),
+    if (!chatId || !userId || !lastSeenMessageId) {
+        throw new Error("Invalid input")
+    }
 
-        //update message to seen
-        prisma.message.updateMany({
-            where: {
-                chatId,
-                senderId: { not: userId },
-                id: { lte: lastSeenMessageId },
-                status: { not: "SEEN" }
-            },
-            data: {
-                status: "SEEN"
-            }
-        })
-
-    ])
+    await chatRepo.markSeenTransaction(
+        chatId,
+        userId,
+        lastSeenMessageId
+    )
 }
 
 module.exports = {

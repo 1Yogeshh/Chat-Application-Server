@@ -1,4 +1,4 @@
-const prisma = require("../../config/prisma")
+const prisma = require("../config/prisma")
 
 const findPrivateChat = (me, other) => {
     return prisma.chat.findFirst({
@@ -39,8 +39,39 @@ const findUserChats = (userId) => {
     })
 }
 
+const updateLastReadMessage = (chatId, userId, lastSeenMessageId) => {
+    return prisma.chatParticipant.update({
+        where: {
+            chatId_userId: { chatId, userId }
+        },
+        data: {
+            lastReadMessageId: lastSeenMessageId
+        }
+    })
+}
+
+const markMessagesSeen = (chatId, userId, lastSeenMessageId) => {
+    return prisma.message.updateMany({
+        where: {
+            chatId,
+            senderId: { not: userId },
+            id: { lte: lastSeenMessageId },
+            status: { not: "SEEN" }
+        },
+        data: { status: "SEEN" }
+    })
+}
+
+const markSeenTransaction = async (chatId, userId, lastSeenMessageId) => {
+    return prisma.$transaction([
+        updateLastReadMessage(chatId, userId, lastSeenMessageId),
+        markMessagesSeen(chatId, userId, lastSeenMessageId)
+    ])
+}
+
 module.exports = {
     findPrivateChat,
     createPrivateChat,
-    findUserChats
+    findUserChats,
+    markSeenTransaction
 }
