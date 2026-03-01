@@ -39,6 +39,31 @@ const findUserChats = (userId) => {
     })
 }
 
+const isParticipant = (chatId, userId) => {
+    return prisma.chatParticipant.findUnique({
+        where: {
+            chatId_userId: { chatId, userId }
+        }
+    })
+}
+
+const sendMessageTransaction = (chatId, senderId, content) => {
+    return prisma.$transaction([
+        prisma.message.create({
+            data: {
+                chatId,
+                senderId,
+                content,
+                status: "SENT"
+            }
+        }),
+        prisma.chat.update({
+            where: { id: chatId },
+            data: {}
+        })
+    ])
+}
+
 const updateLastReadMessage = (chatId, userId, lastSeenMessageId) => {
     return prisma.chatParticipant.update({
         where: {
@@ -73,5 +98,7 @@ module.exports = {
     findPrivateChat,
     createPrivateChat,
     findUserChats,
-    markSeenTransaction
+    markSeenTransaction,
+    isParticipant,
+    sendMessageTransaction
 }

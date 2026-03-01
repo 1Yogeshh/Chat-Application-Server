@@ -20,31 +20,19 @@ const getUserChatService = async (userId) => {
 
 const sendMessageService = async ({ chatId, senderId, content }) => {
 
-    const [message] = await prisma.$transaction([
+    const [message] = await chatRepo.sendMessageTransaction(
+        chatId,
+        senderId,
+        content
+    )
 
-        messageRepo.createMessage({
-            chatId,
-            senderId,
-            content,
-            status: "SENT"
-        }),
-
-        messageRepo.updateChatTimestamp(chatId)
-    ])
     return message
 }
 
 // get message service (paginated)
 const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
 
-    const participant = await prisma.chatParticipant.findUnique({
-        where: {
-            chatId_userId: {
-                chatId,
-                userId
-            }
-        }
-    });
+    const participant = await chatRepo.isParticipant(chatId, userId)
 
     if (!participant) {
         throw new Error("Access denied: Not a participant of this chat");
