@@ -10,20 +10,19 @@ const {
     searchUser,
     getUsersByIds
 } = require("../controllers/user.controller")
+const {
+    createUserSchema,
+    updateUserSchema,
+    searchUserSchema
+} = require("../validators/user.schema")
+const validate = require("../middleware/validate.middleware")
 
 
-router.post("/create", protect, createUser)
+router.post("/create", protect, validate(createUserSchema), createUser)
 router.get("/myprofile", protect, getMyProfile)
 router.get("/userProfile/:authUserId", protect, getUserProfile)
-router.put("/update", protect, updateUser)
-router.get("/search", protect, searchUser)
+router.put("/update", protect, validate(updateUserSchema), updateUser)
+router.get("/search", protect, validate(searchUserSchema, "query"), searchUser)
 router.post("/batch", protect, getUsersByIds)
-router.get("/health", (req, res) => {
-    console.log("hello world")
-    res.status(200).json({
-        success: true,
-        message: "Server is healthy 🚀"
-    })
-})
 
 module.exports = router
