@@ -6,16 +6,11 @@ const USER_SERVICE = process.env.USER_SERVICE;
 const getComposedChats = async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    // console.log("AUTH HEADER:", req.headers.authorization);
-
-    // 1️⃣ Chat service se chats
+   
     const chatRes = await axios.get(
       `${CHAT_SERVICE}/chats`,
       { headers: { Authorization: authHeader } }
     );
-
-    // console.log("CHAT_SERVICE:", CHAT_SERVICE);
-    // console.log("USER_SERVICE:", USER_SERVICE);
 
     const chats = chatRes.data.chats;
 
@@ -23,14 +18,12 @@ const getComposedChats = async (req, res) => {
       return res.json([]);
     }
 
-    // ⚠️ authUserId middleware se aana best hota hai
     const myUserId = req.user.authUserId;
     console.log(myUserId)
     if (!myUserId) {
       return res.status(401).json({ message: "User id missing" });
     }
 
-    // 2️⃣ other userIds nikalo
     const userIds = [
       ...new Set(
         chats.flatMap(chat =>
@@ -41,7 +34,6 @@ const getComposedChats = async (req, res) => {
       )
     ];
 
-    // 3️⃣ batch user fetch
     const userRes = await axios.post(
       `${USER_SERVICE}/batch`,
       { ids: userIds },
@@ -50,7 +42,6 @@ const getComposedChats = async (req, res) => {
 
     const usersMap = userRes.data;
 
-    // 4️⃣ merge
     const finalChats = chats.map(chat => {
       const otherUserId =
         chat.participants.find(p => p.userId !== myUserId)?.userId;

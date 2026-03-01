@@ -56,21 +56,6 @@ const getUserChatService = async (userId) => {
     })
 }
 
-
-//send message service
-// const sendMessageService = async ({ chatId, senderId, content }) => {
-//     const message = await prisma.message.create({
-//         data: {
-//             chatId,
-//             senderId,
-//             content,
-//             status: "SENT"
-//         }
-//     })
-
-//     return message
-// }
-
 const sendMessageService = async ({ chatId, senderId, content }) => {
 
     const [message] = await prisma.$transaction([
@@ -93,64 +78,6 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
 
     return message
 }
-
-
-//get message service
-// const getMessageService = async ({ chatId, userId }) => {
-
-//     //Validate user belongs to chat
-//     const participant = await prisma.chatParticipant.findUnique({
-//         where: {
-//             chatId_userId: {
-//                 chatId,
-//                 userId
-//             }
-//         }
-//     });
-
-//     //if not belongs to chat
-//     if (!participant) {
-//         throw new Error("Access denied: Not a participant of this chat");
-//     }
-
-//     const message = await prisma.message.findMany({
-//         where: { chatId },
-//         orderBy: { createdAt: "asc" }
-//     })
-
-//     if (message.length === 0) {
-//         return []
-//     }
-
-//     const lastMessageId = message[message.length - 1].id;
-
-//     //update last message read id
-//     await prisma.chatParticipant.update({
-//         where: {
-//             chatId_userId: {
-//                 chatId,
-//                 userId
-//             }
-//         },
-//         data: {
-//             lastReadMessageId: lastMessageId
-//         }
-//     })
-
-//     //update message to seen
-//     await prisma.message.updateMany({
-//         where: {
-//             chatId,
-//             senderId: { not: userId },
-//             status: { not: "SEEN" }
-//         },
-//         data: {
-//             status: "SEEN"
-//         }
-//     })
-
-//     return message
-// }
 
 // get message service (paginated)
 const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
