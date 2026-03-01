@@ -6,8 +6,9 @@ const {
     searchUserService,
     getUserByIdsService
 } = require("../services/user.service")
+const userLogger = require("../logger/user.logger")
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
     try {
         const { authUserId, email } = req.user
 
@@ -32,11 +33,15 @@ const createUser = async (req, res) => {
         })
 
     } catch (err) {
+        userLogger.error({
+            action: "USER_CREATE_ERROR",
+            error: err.message
+        })
         next(err)
     }
 }
 
-const getMyProfile = async (req, res) => {
+const getMyProfile = async (req, res, next) => {
     try {
         const user = await getMyProfileService(req.user.authUserId)
 
@@ -75,6 +80,10 @@ const updateUser = async (req, res) => {
             user
         });
     } catch (err) {
+        userLogger.error({
+            action: "USER_UPDATE_ERROR",
+            error: err.message
+        })
         res.status(400).json({
             message: err.message
         });
@@ -98,7 +107,7 @@ const getUsersByIds = async (req, res, next) => {
     try {
         const { ids } = req.body
 
-        const userMap = await getUsersByIdsService(ids)
+        const userMap = await getUserByIdsService(ids)
 
         res.json(userMap);
     } catch (err) {
