@@ -33,7 +33,6 @@ app.use("/", userRoutes)
 app.get("/db-check", async (req, res) => {
     try {
         await prisma.$queryRaw`SELECT 1`;
-        console.log("hello world!")
         res.json({ status: "SUCCESS", message: "DB connected ✅" });
     } catch (err) {
         res.status(500).json({
