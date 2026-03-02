@@ -8,7 +8,6 @@ module.exports = async(io) => {
         // new message
         if (event.type === "NEW_MESSAGE") {
 
-            // 1️⃣ Receiver
             if (await presence.isUserOnline(event.receiverId)) {
                 const receiverSockets = await presence.getUserSockets(event.receiverId);
 
@@ -17,7 +16,6 @@ module.exports = async(io) => {
                 });
             }
 
-            // 2️⃣ Sender (IMPORTANT 🔥)
             if (await presence.isUserOnline(event.message.senderId)) {
                 const senderSockets = await presence.getUserSockets(event.message.senderId);
 
@@ -26,7 +24,6 @@ module.exports = async(io) => {
                 });
             }
         }
-
 
         //message seen
         if (event.type === "MESSAGE_SEEN") {
@@ -37,33 +34,11 @@ module.exports = async(io) => {
             })
         }
 
-        //User Online
-        // if (event.type === "USER_ONLINE") {
-        //     io.emit("user-online", {
-        //         userId: event.userId,
-        //     })
-
-        //     const users = await presence.getOnlineUsers();
-        //     io.emit("online-users-list", users);
-        // }
-
-        // //User Offline
-        // if (event.type === "USER_OFFLINE") {
-        //     io.emit("user-offline", {
-        //         userId: event.userId,
-        //     })
-
-        //     const users = await presence.getOnlineUsers();
-        //     io.emit("online-users-list", users);
-        // }
-
         if (event.type === "USER_ONLINE" || event.type === "USER_OFFLINE") {
             const users = await presence.getOnlineUsers();
             io.emit("online-users-list", users);
         }
 
-
-        // 🔥 FORCE FULL LIST UPDATE
         if (event.type === "ONLINE_LIST_UPDATE") {
             io.emit("online-users-list", event.users);
         }

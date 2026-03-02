@@ -74,7 +74,6 @@ module.exports = async(socket) => {
                 })
             );
 
-            // 🔥 ALSO BROADCAST UPDATED LIST
             const updatedUsers = await presence.getOnlineUsers();
 
             await redisPublisher.publish(
