@@ -40,7 +40,7 @@ const sendMessageService = async ({ chatId, senderId, content }) => {
     return message
 }
 
-// get message service (paginated)
+// get message service
 const getMessageService = async ({ chatId, userId, cursor, limit = 20 }) => {
 
     const participant = await chatRepo.isParticipant(chatId, userId)

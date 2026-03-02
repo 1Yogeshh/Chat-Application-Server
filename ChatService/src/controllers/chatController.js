@@ -142,7 +142,6 @@ const getUserChat = async (req, res, next) => {
     }
 }
 
-
 module.exports = {
     getPrivateChat,
     sendMessage,
