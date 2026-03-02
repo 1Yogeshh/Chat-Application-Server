@@ -137,7 +137,6 @@ const searchUserService = async (
     page = 1,
     limit = 20
 ) => {
-    // 🔹 Business Rule
     if (!searchText || searchText.trim() === "") {
         userLogger.warn({
             action: "SEARCH_EMPTY_QUERY",
