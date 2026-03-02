@@ -18,7 +18,7 @@ const createUser = async (req, res, next) => {
             ...req.body
         })
 
-        if (result.alreadyExists) {
+        if (result.alreadyExits) {
             return res.status(409).json({
                 success: false,
                 message: "User already exists",
