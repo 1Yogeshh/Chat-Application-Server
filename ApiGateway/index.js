@@ -6,22 +6,18 @@ const { getComposedChats } = require("./chat.compose");
 const { protect } = require("./middlware/Middleware")
 
 const app = express();
-// app.use(express.json());
 
 app.use(cors({
     origin: process.env.CLIENT_URL,
     credentials: true
 }));
 
-// ✅ Health Check
 app.get("/health", (req, res) => {
     res.json({ status: "API Gateway running" });
 });
 
-// ⚠️ CUSTOM ROUTE (ABOVE PROXIES)
 app.get("/api/chats", protect, getComposedChats);
 
-// 🔐 AUTH SERVICE
 app.use(
     "/api/auth",
     createProxyMiddleware({
@@ -33,7 +29,6 @@ app.use(
     })
 );
 
-// 👤 USER SERVICE
 app.use(
     "/api/users",
     createProxyMiddleware({
@@ -45,7 +40,6 @@ app.use(
     })
 );
 
-// 💬 CHAT SERVICE
 app.use(
     "/api/chat",
     createProxyMiddleware({
