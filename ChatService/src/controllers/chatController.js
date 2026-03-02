@@ -7,9 +7,6 @@ const {
 
 const chatLogger = require("../logger/chat.logger")
 
-
-// ================= PRIVATE CHAT =================
-
 const getPrivateChat = async (req, res, next) => {
     try {
 
@@ -41,9 +38,6 @@ const getPrivateChat = async (req, res, next) => {
         next(err)
     }
 }
-
-
-// ================= SEND MESSAGE =================
 
 const sendMessage = async (req, res, next) => {
     try {
@@ -81,9 +75,6 @@ const sendMessage = async (req, res, next) => {
         next(err)
     }
 }
-
-
-// ================= GET MESSAGE =================
 
 const getMessage = async (req, res, next) => {
     try {
@@ -125,9 +116,6 @@ const getMessage = async (req, res, next) => {
         next(err)
     }
 }
-
-
-// ================= GET USER CHAT LIST =================
 
 const getUserChat = async (req, res, next) => {
     try {
