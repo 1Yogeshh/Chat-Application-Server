@@ -24,7 +24,7 @@ app.use(cookieParser())
 app.use(
     pinoHttp({
         logger,
-        customLogLevel: function (res, err) {
+        customLogLevel: function(res, err) {
             if (res.statusCode >= 500) return "error"
             if (res.statusCode >= 400) return "warn"
             return "info"
@@ -34,13 +34,9 @@ app.use(
 
 app.use("/", authRoutes)
 
-app.get("/health", (req, res) => {
-    res.json({ status: "OK", service: "Auth Service" })
-})
-
-app.get("/db-check", async (req, res) => {
+app.get("/db-check", async(req, res) => {
     try {
-        await prisma.$queryRaw`SELECT 1`
+        await prisma.$queryRaw `SELECT 1`
         res.json({ status: "SUCCESS", message: "DB connected ✅" })
     } catch (err) {
         logger.error({ action: "DB_CONNECTION_FAILED", error: err.message })
