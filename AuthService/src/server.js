@@ -48,7 +48,6 @@ app.get("/db-check", async(req, res) => {
 })
 
 app.use((err, req, res, next) => {
-
     logger.error({
         action: "GLOBAL_ERROR",
         message: err.message,
