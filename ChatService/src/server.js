@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(
     pinoHttp({
         logger,
-        customLogLevel: function (res, err) {
+        customLogLevel: function(res, err) {
             if (res.statusCode >= 500) return "error"
             if (res.statusCode >= 400) return "warn"
             return "info"
@@ -29,7 +29,7 @@ const server = http.createServer(app);
 
 initSocket(server);
 
-const startServer = async () => {
+const startServer = async() => {
 
     if (process.env.NODE_ENV !== "production") {
 
@@ -43,7 +43,6 @@ const startServer = async () => {
 };
 
 startServer();
-
 
 app.use((err, req, res, next) => {
 
